@@ -1,0 +1,42 @@
+plugins {
+    id "java-gradle-plugin"
+    id "groovy"
+    id "codenarc"
+    id "idea"
+    id "com.gradle.plugin-publish" version "0.9.4"
+}
+
+version = "0.1"
+group = "com.scrain.gradle"
+
+repositories {
+    jcenter()
+}
+
+dependencies {
+    compile gradleApi()
+    compile localGroovy()
+}
+
+gradlePlugin {
+    plugins {
+        archiveChecksumPlugin {
+            id = "com.scrain.gradle.archive-checksum-plugin"
+            implementationClass = "com.scrain.gradle.ArchiveChecksumPlugin"
+        }
+    }
+}
+
+pluginBundle {
+    website = 'https://plugins.gradle.org/plugin/com.scrain.gradle.archive-checksum-plugin'
+    vcsUrl = 'https://github.com/scrain/gradle-archive-checksum-plugin'
+    description = 'Greetings from here!'
+    tags = ['greetings', 'salutations']
+
+    plugins {
+        archiveChecksumPlugin {
+            id = "com.scrain.gradle.archive-checksum-plugin"
+            displayName = "Archive Checksum Plugin"
+        }
+    }
+}
