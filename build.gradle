@@ -1,13 +1,31 @@
-plugins {
-    id "java-gradle-plugin"
-    id "groovy"
-    id "codenarc"
-    id "idea"
-    id "com.gradle.plugin-publish" version "0.9.4"
+buildscript {
+    repositories {
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
+    }
+    dependencies {
+        classpath "com.gradle.publish:plugin-publish-plugin:0.9.4"
+    }
 }
+//plugins {
+//    id 'groovy'
+//    id 'idea'
+//    id 'maven-publish'
+//    id 'java-gradle-plugin'
+//    id 'com.gradle.plugin-publish' version '0.9.4'
+//}
+apply plugin: 'groovy'
+apply plugin: 'idea'
+apply plugin: 'maven-publish'
+apply plugin: 'java-gradle-plugin'
+apply plugin: 'com.gradle.plugin-publish'
 
-version = "0.1"
-group = "com.scrain.gradle"
+version = '0.1'
+group = 'com.scrain.gradle'
+
+sourceCompatibility = '1.6'
+targetCompatibility = '1.6'
 
 repositories {
     jcenter()
@@ -16,27 +34,33 @@ repositories {
 dependencies {
     compile gradleApi()
     compile localGroovy()
+
+    // testCompile gradleTestKit()
+
+    testCompile('org.spockframework:spock-core:1.0-groovy-2.4') {
+        exclude group: 'org.codehaus.groovy'
+    }
 }
 
 gradlePlugin {
     plugins {
         archiveChecksumPlugin {
-            id = "com.scrain.gradle.archive-checksum-plugin"
-            implementationClass = "com.scrain.gradle.ArchiveChecksumPlugin"
+            id = 'com.scrain.archive-checksum-plugin'
+            implementationClass = 'com.scrain.gradle.ArchiveChecksumPlugin'
         }
     }
 }
 
 pluginBundle {
-    website = 'https://plugins.gradle.org/plugin/com.scrain.gradle.archive-checksum-plugin'
+    website = 'https://plugins.gradle.org/plugin/com.scrain.archive-checksum-plugin'
     vcsUrl = 'https://github.com/scrain/gradle-archive-checksum-plugin'
     description = 'Greetings from here!'
     tags = ['greetings', 'salutations']
 
     plugins {
         archiveChecksumPlugin {
-            id = "com.scrain.gradle.archive-checksum-plugin"
-            displayName = "Archive Checksum Plugin"
+            id = 'com.scrain.archive-checksum-plugin'
+            displayName = 'Archive Checksum Plugin'
         }
     }
 }
