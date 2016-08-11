@@ -22,7 +22,7 @@ import groovy.transform.ToString
 class ChecksumItem {
     String name
 
-    boolean useSource = false
+    boolean useSource = true
 
     String taskName
 
