@@ -45,11 +45,11 @@ class ChecksumExtensionSpec extends Specification {
             ext.checksumTaskName(item) == expectedName
 
         where:
-            ext                                               | item                              | expectedName
-            new ChecksumExtension()                           | new ChecksumItem('foo')           | 'fooChecksum'
-            new ChecksumExtension(taskNameTemplate: 'x$name') | new ChecksumItem('foo')           | 'xfoo'
-            new ChecksumExtension()                           | new ChecksumItem(taskName: 'bar') | 'bar'
-            new ChecksumExtension(taskNameTemplate: 'x$name') | new ChecksumItem(taskName: 'bar') | 'bar'
+            ext                                                 | item                              | expectedName
+            new ChecksumExtension()                             | new ChecksumItem('foo')           | 'fooChecksum'
+            new ChecksumExtension(taskNameTemplate: 'x${task}') | new ChecksumItem('foo')           | 'xfoo'
+            new ChecksumExtension()                             | new ChecksumItem(taskName: 'bar') | 'bar'
+            new ChecksumExtension(taskNameTemplate: 'x${task}') | new ChecksumItem(taskName: 'bar') | 'bar'
     }
 
     @Unroll
@@ -61,8 +61,8 @@ class ChecksumExtensionSpec extends Specification {
         where:
             ext                                                     | item                                  | expectedName
             new ChecksumExtension()                                 | new ChecksumItem('foo')               | 'checksum.foo'
-            new ChecksumExtension(propertyNameTemplate: 'x${name}') | new ChecksumItem('foo')               | 'xfoo'
+            new ChecksumExtension(propertyNameTemplate: 'x${task}') | new ChecksumItem('foo')               | 'xfoo'
             new ChecksumExtension()                                 | new ChecksumItem(propertyName: 'bar') | 'bar'
-            new ChecksumExtension(propertyNameTemplate: 'x${name}') | new ChecksumItem(propertyName: 'bar') | 'bar'
+            new ChecksumExtension(propertyNameTemplate: 'x${task}') | new ChecksumItem(propertyName: 'bar') | 'bar'
     }
 }

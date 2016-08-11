@@ -44,10 +44,10 @@ class ChecksumExtension {
     String propertyFile = 'checksums.properties'
 
     @SuppressWarnings('GStringExpressionWithinString')
-    String propertyNameTemplate = 'checksum.${name}'
+    String propertyNameTemplate = 'checksum.${task}'
 
     @SuppressWarnings('GStringExpressionWithinString')
-    String taskNameTemplate = '${name}Checksum'
+    String taskNameTemplate = '${task}Checksum'
 
     private String algorithm = ALG_SHA1
 
@@ -59,7 +59,7 @@ class ChecksumExtension {
         if ( ALGORITHMS.contains(algorithm) ) {
             this.algorithm = algorithm
         } else {
-            throw new IllegalArgumentException("algorithm '${algorithm}' is invalid.  Posible values: ${ALGORITHMS} ")
+            throw new IllegalArgumentException("algorithm '${algorithm}' is invalid.  Posible values: ${ALGORITHMS}")
         }
     }
 
@@ -74,7 +74,7 @@ class ChecksumExtension {
         if (item.taskName) {
             item.taskName
         } else {
-            engine.createTemplate(taskNameTemplate).make( ['name': item.name] ).toString()
+            engine.createTemplate(taskNameTemplate).make( ['task': item.name] ).toString()
         }
     }
 
@@ -82,7 +82,7 @@ class ChecksumExtension {
         if (item.propertyName) {
             item.propertyName
         } else {
-            engine.createTemplate(propertyNameTemplate).make( ['name': item.name] ).toString()
+            engine.createTemplate(propertyNameTemplate).make( ['task': item.name] ).toString()
         }
     }
 }
