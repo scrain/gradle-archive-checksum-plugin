@@ -52,7 +52,7 @@ class ChecksumFunctionalSpec extends Specification {
         when:
         createBuildFile( """
             checksum {
-                checksums {
+                tasks {
                     jar { }
                     sourcesJar { }
                 }
@@ -71,7 +71,7 @@ class ChecksumFunctionalSpec extends Specification {
         when:
         createBuildFile( """
             checksum {
-                checksums {
+                tasks {
                     jar { }
                     sourcesJar { }
                 }
@@ -91,7 +91,7 @@ class ChecksumFunctionalSpec extends Specification {
         createBuildFile( """
             checksum {
                 propertyFile='gradle.properties'
-                checksums {
+                tasks {
                     jar { }
                 }
             }
@@ -111,7 +111,7 @@ class ChecksumFunctionalSpec extends Specification {
         createBuildFile( """
             checksum {
                 propertyFile='foo/bar.properties'
-                checksums {
+                tasks {
                     jar { }
                 }
             }

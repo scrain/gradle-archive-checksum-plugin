@@ -22,15 +22,15 @@ import org.gradle.api.NamedDomainObjectCollection
 import org.gradle.api.Project
 
 class ChecksumExtension {
+    protected static final String NAME = 'checksum'
+
     private TemplateEngine engine = new SimpleTemplateEngine()
 
     ChecksumExtension() { }
 
     ChecksumExtension(Project project) {
-        checksums = project.container(ChecksumItem)
+        tasks = project.container(ChecksumItem)
     }
-
-    protected static final String NAME = 'checksum'
 
     String propertyFile = 'checksums.properties'
 
@@ -52,10 +52,10 @@ class ChecksumExtension {
         }
     }
 
-    NamedDomainObjectCollection<ChecksumItem> checksums
+    NamedDomainObjectCollection<ChecksumItem> tasks
 
-    void checksums(Closure closure) {
-        checksums.configure(closure)
+    void tasks(Closure closure) {
+        tasks.configure(closure)
     }
 
     protected String checksumTaskName(ChecksumItem item) {

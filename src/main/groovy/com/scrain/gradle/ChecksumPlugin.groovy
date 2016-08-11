@@ -36,7 +36,7 @@ class ChecksumPlugin implements Plugin<Project> {
         saveChecksums.dependsOn computeChecksums
 
         project.afterEvaluate {
-            checksumExt.checksums.each { ChecksumItem item ->
+            checksumExt.tasks.each { ChecksumItem item ->
                 println ":checksum-plugin: item - ${item}"
                 createChecksumTask(project, item)
             }
