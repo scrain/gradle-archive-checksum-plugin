@@ -20,23 +20,6 @@ import spock.lang.Specification
 import spock.lang.Unroll
 
 class ChecksumExtensionSpec extends Specification {
-    def "setting invalid checksum algorithm should throw exception"() {
-        ChecksumExtension ext = new ChecksumExtension()
-
-        when:
-            ext.algorithm = ChecksumExtension.ALG_MD5
-            ext.algorithm = ChecksumExtension.ALG_SHA1
-
-        then:
-            notThrown IllegalArgumentException
-
-        when:
-            ext.algorithm = 'foo'
-
-        then:
-            thrown IllegalArgumentException
-
-    }
 
     @Unroll
     @SuppressWarnings('GStringExpressionWithinString')

@@ -25,11 +25,7 @@ import org.gradle.api.Project
  * Plugin extension for checksum plugin.
  */
 class ChecksumExtension {
-    protected static final String ALG_MD5 = 'md5'
-
-    protected static final String ALG_SHA1 = 'sha1'
-
-    protected static final String[] ALGORITHMS = [ALG_MD5, ALG_SHA1]
+    protected static final String[] USE_SOURCE_OPTIONS = [Boolean.TRUE.toString(), Boolean.FALSE.toString(), 'auto']
 
     protected static final String NAME = 'checksum'
 
@@ -49,19 +45,7 @@ class ChecksumExtension {
     @SuppressWarnings('GStringExpressionWithinString')
     String taskNameTemplate = '${task}Checksum'
 
-    private String algorithm = ALG_SHA1
-
-    String getAlgorithm() {
-        algorithm
-    }
-
-    void setAlgorithm(String algorithm) {
-        if ( ALGORITHMS.contains(algorithm) ) {
-            this.algorithm = algorithm
-        } else {
-            throw new IllegalArgumentException("algorithm '${algorithm}' is invalid.  Posible values: ${ALGORITHMS}")
-        }
-    }
+    String algorithm = 'sha1'
 
     NamedDomainObjectCollection<ChecksumItem> tasks
 
