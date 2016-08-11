@@ -54,11 +54,9 @@ class SourceChecksumTask extends SourceTask {
 
         println(":${name} files included:")
 
-        String totalProp = "total${name}"
+        String totalProp = "${name}.total.checksum"
 
-        AntBuilder antBuilder = new AntBuilder()
-
-        antBuilder.checksum(totalproperty: totalProp, algorithm: checksumExt.algorithm,  todir: checksumsDir) {
+        ant.checksum(totalproperty: totalProp, algorithm: checksumExt.algorithm,  todir: checksumsDir) {
             fileset(dir: project.projectDir) {
                 println(":${name}   ${project.relativePath(sourceFileListing)}")
                 include name: project.relativePath(sourceFileListing)
@@ -68,7 +66,7 @@ class SourceChecksumTask extends SourceTask {
                 }
             }
         }
-        checksum = antBuilder.properties[totalProp]
+        checksum = ant.properties[totalProp]
 
         println ":${name} result: ${checksum}"
     }
