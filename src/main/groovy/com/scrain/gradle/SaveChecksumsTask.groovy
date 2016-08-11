@@ -56,7 +56,7 @@ class SaveChecksumsTask extends DefaultTask {
         if (keyAlreadyExists) {
             logger.info( ":${name} updating: ${key}=${value}")
             project.ant.replaceregexp(file: file, byline: true) {
-                regexp(pattern: "^(\\s*)$key((\\s*[=|:]\\s*)|(\\s+)).+\$")
+                regexp(pattern: "^(\\s*)$key((\\s*[=|:]\\s*)|(\\s+)).*\$")
                 substitution(expression: "\\1$key\\2$value")
             }
         } else {
