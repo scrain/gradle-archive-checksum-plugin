@@ -16,10 +16,12 @@
 
 plugins {
     id 'groovy'
+    id 'codenarc'
     id 'idea'
     id 'maven-publish'
     id 'java-gradle-plugin'
     id 'com.gradle.plugin-publish' version '0.9.4'
+    id 'net.saliman.cobertura' version '2.3.2'
 }
 
 group = 'com.scrain.gradle'
@@ -67,7 +69,19 @@ pluginBundle {
     }
 }
 
-
-project.tasks.withType(org.gradle.api.publish.maven.tasks.GenerateMavenPom) {
-    println "${it.name}: " + it.class.name
+codenarcMain {
+    configFile = file('gradle/codenarcMain.groovy')
 }
+
+codenarcTest {
+    configFile = file('gradle/codenarcTest.groovy')
+}
+
+codenarc {
+}
+
+cobertura {
+    coverageFormats = ['html', 'xml']
+    coverageIgnoreTrivial = true
+}
+
