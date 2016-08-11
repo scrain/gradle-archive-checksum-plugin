@@ -1,51 +1,73 @@
+/*
+ * Copyright [2016] Shawn Crain
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.scrain.gradle
 
-import org.apache.tools.ant.BuildException
+import org.gradle.api.DefaultTask
 import org.gradle.api.GradleException
 import org.gradle.api.tasks.TaskAction
 
-/**
- * Created by scrain on 7/24/16.
- */
-class SaveChecksumsTask extends BaseTask {
+class SaveChecksumsTask extends DefaultTask {
+    protected static final String NAME = 'saveChecksums'
+
+    String group = ChecksumPlugin.TASK_GROUP
+
+    private ChecksumExtension checksumExt = project.extensions.findByName(ChecksumExtension.NAME)
 
     @TaskAction
-    def saveChecksums() {
-        File checksumsFile = project.file pluginExt.checksumsPropertyFile
+    def save() {
+        File checksumsFile = createChecksumsFile()
 
-        if ( !checksumsFile.exists() ) {
+        Properties existingProperties = loadProperties(checksumsFile)
+
+        project.tasks.withType(SourceChecksumTask) {
+            writeChecksum(checksumsFile, it.propertyName, it.checksum, existingProperties.containsKey(it.propertyName))
+        }
+    }
+
+    private File createChecksumsFile() {
+        File checksumsFile = project.file checksumExt.propertyFile
+
+        if (!checksumsFile.exists()) {
+            logger.info ":${name} checksums file does not exist, creating"
             checksumsFile.parentFile.mkdirs()
             checksumsFile.createNewFile()
         } else if (!checksumsFile.isFile()) {
-            throw new GradleException("checksumsFile ${pluginExt.checksumsPropertyFile} is a directory")
+            throw new GradleException("checksumsFile ${checksumExt.propertyFile} is a directory!")
         }
-
-        pluginExt.checksums.each { String key, String value ->
-            writeChecksum(checksumsFile, key, value)
-        }
+        checksumsFile
     }
 
-    def writeChecksum(File file, String key, value) {
-        logger.info( ":${name} writing ${key}=${value} to checksums file ${file}")
-        try {
-            if (! containsProperty(file, key)) {
-                logger.info( ":${name} '${key}' not found, appending")
-                file << "${key}=${value}\n"
-            } else {
-                project.ant.replaceregexp(file: file, byline: true) {
-                    regexp(pattern: "^(\\s*)$key((\\s*[=|:]\\s*)|(\\s+)).+\$")
-                    substitution(expression: "\\1$key\\2$value")
-                }
+    protected void writeChecksum(File file, String key, String value, boolean keyAlreadyExists) {
+        value = value ?: ''
+        if (keyAlreadyExists) {
+            logger.info( ":${name} updating: ${key}=${value}")
+            project.ant.replaceregexp(file: file, byline: true) {
+                regexp(pattern: "^(\\s*)$key((\\s*[=|:]\\s*)|(\\s+)).+\$")
+                substitution(expression: "\\1$key\\2$value")
             }
-        } catch (BuildException be) {
-            throw new GradleException("Unabled to write property '${key}' to ${file}" , be)
+        } else {
+            logger.info( ":${name} adding:   ${key}=${value}")
+            file << "\n${key}=${value}"
         }
     }
 
-    boolean containsProperty(File file, String key ) {
+    private Properties loadProperties(File file) {
         Properties props = new Properties()
         props.load(file.newReader())
-        props.containsKey(key)
+        props
     }
-
 }

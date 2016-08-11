@@ -1,66 +1,57 @@
-buildscript {
-    repositories {
-        maven {
-            url "https://plugins.gradle.org/m2/"
-        }
-    }
-    dependencies {
-        classpath "com.gradle.publish:plugin-publish-plugin:0.9.4"
-    }
+plugins {
+    id 'groovy'
+    id 'idea'
+    id 'maven-publish'
+    id 'java-gradle-plugin'
+    id 'com.gradle.plugin-publish' version '0.9.4'
 }
-//plugins {
-//    id 'groovy'
-//    id 'idea'
-//    id 'maven-publish'
-//    id 'java-gradle-plugin'
-//    id 'com.gradle.plugin-publish' version '0.9.4'
-//}
-apply plugin: 'groovy'
-apply plugin: 'idea'
-apply plugin: 'maven-publish'
-apply plugin: 'java-gradle-plugin'
-apply plugin: 'com.gradle.plugin-publish'
 
-version = '0.1'
 group = 'com.scrain.gradle'
 
 sourceCompatibility = '1.6'
 targetCompatibility = '1.6'
+
+ext {
+    groovyRelease = GroovySystem.version.replaceAll(/\.\d+$/,'') // major.minor portion only
+}
 
 repositories {
     jcenter()
 }
 
 dependencies {
-    compile gradleApi()
     compile localGroovy()
+    compile gradleApi()
 
-    // testCompile gradleTestKit()
-
-    testCompile('org.spockframework:spock-core:1.0-groovy-2.4') {
+    testCompile("org.spockframework:spock-core:1.0-groovy-${groovyRelease}") {
         exclude group: 'org.codehaus.groovy'
     }
 }
 
 gradlePlugin {
     plugins {
-        archiveChecksumPlugin {
-            id = 'com.scrain.archive-checksum-plugin'
-            implementationClass = 'com.scrain.gradle.ArchiveChecksumPlugin'
+        checksumPlugin {
+            id = 'com.scrain.checksum-plugin'
+            implementationClass = 'com.scrain.gradle.ChecksumPlugin'
         }
     }
 }
 
 pluginBundle {
-    website = 'https://plugins.gradle.org/plugin/com.scrain.archive-checksum-plugin'
-    vcsUrl = 'https://github.com/scrain/gradle-archive-checksum-plugin'
+    website = 'https://plugins.gradle.org/plugin/com.scrain.checksum-plugin'
+    vcsUrl = 'https://github.com/scrain/gradle-checksum-plugin'
     description = 'Greetings from here!'
     tags = ['greetings', 'salutations']
 
     plugins {
-        archiveChecksumPlugin {
-            id = 'com.scrain.archive-checksum-plugin'
-            displayName = 'Archive Checksum Plugin'
+        checksumPlugin {
+            id = 'com.scrain.checksum-plugin'
+            displayName = 'Checksum Plugin'
         }
     }
+}
+
+
+project.tasks.withType(org.gradle.api.publish.maven.tasks.GenerateMavenPom) {
+    println "${it.name}: " + it.class.name
 }

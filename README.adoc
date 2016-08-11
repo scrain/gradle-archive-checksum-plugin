@@ -1,0 +1,12 @@
+
+
+checksums on artifacts
+
+checksum on pom
+
+
+Prior to groovy 2.4 the groovy compiler embedded timestamps within the class directly
+
+http://www.groovy-lang.org/mailing-lists.html#nabble-td365696
+
+https://github.com/groovy/groovy-core/commit/bcdb89e
