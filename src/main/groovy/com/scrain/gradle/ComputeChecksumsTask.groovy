@@ -19,6 +19,9 @@ package com.scrain.gradle
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.TaskAction
 
+/**
+ * Class for the gradle computeChecksums task.
+ */
 class ComputeChecksumsTask extends DefaultTask {
     protected static final String NAME = 'computeChecksums'
 
@@ -26,6 +29,6 @@ class ComputeChecksumsTask extends DefaultTask {
 
     @TaskAction
     def computeChecksums() {
-        println ":${name}: computed checksums"
+        logger.lifecycle ":${name} computed checksums"
     }
 }

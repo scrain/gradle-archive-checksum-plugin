@@ -50,81 +50,81 @@ class ChecksumFunctionalSpec extends Specification {
 
     def 'A build with multiple checksum task should contain a checksum task for each'() {
         when:
-        createBuildFile( """
-            checksum {
-                tasks {
-                    jar { }
-                    sourcesJar { }
+            createBuildFile("""
+                checksum {
+                    tasks {
+                        jar { }
+                        sourcesJar { }
+                    }
                 }
-            }
-        """)
-        BuildResult result = build 'tasks', '--all'
+            """)
+            BuildResult result = build 'tasks', '--all'
 
         then:
-        result.output.contains(ComputeChecksumsTask.NAME)
-        result.output.contains(SaveChecksumsTask.NAME)
-        result.output.contains('jarChecksum')
-        result.output.contains('sourcesJarChecksum')
+            result.output.contains(ComputeChecksumsTask.NAME)
+            result.output.contains(SaveChecksumsTask.NAME)
+            result.output.contains('jarChecksum')
+            result.output.contains('sourcesJarChecksum')
     }
 
     def 'Saving checksums creates a checksum file with a value for each archive'() {
         when:
-        createBuildFile( """
-            checksum {
-                tasks {
-                    jar { }
-                    sourcesJar { }
+            createBuildFile("""
+                checksum {
+                    tasks {
+                        jar { }
+                        sourcesJar { }
+                    }
                 }
-            }
-        """)
-        BuildResult result = build SaveChecksumsTask.NAME
-        File checksumsFile = new File("${projectDir}/checksums.properties")
+            """)
+            build SaveChecksumsTask.NAME
+            File checksumsFile = new File("${projectDir}/checksums.properties")
 
         then:
-        checksumsFile.exists()
-        checksumsFile.text.contains 'checksum.jar='
-        checksumsFile.text.contains 'checksum.sourcesJar='
+            checksumsFile.exists()
+            checksumsFile.text.contains 'checksum.jar='
+            checksumsFile.text.contains 'checksum.sourcesJar='
     }
 
     def 'Checksums can be saved to a file containing other unrelated values'() {
         when:
-        createBuildFile( """
-            checksum {
-                propertyFile='gradle.properties'
-                tasks {
-                    jar { }
+            createBuildFile("""
+                checksum {
+                    propertyFile='gradle.properties'
+                    tasks {
+                        jar { }
+                    }
                 }
-            }
-        """)
-        BuildResult result = build SaveChecksumsTask.NAME
-        File checksumsFile = new File("${projectDir}/gradle.properties")
+            """)
+            build SaveChecksumsTask.NAME
+            File checksumsFile = new File("${projectDir}/gradle.properties")
 
         then:
-        checksumsFile.text.contains 'version = 1.0'              // existing value left alone
-        checksumsFile.text.contains 'checksum.jar='              // checksum property exists
-        !checksumsFile.text.contains('checksum.jar=nochecksum')  // previous value overwritten
+            checksumsFile.text.contains 'version = 1.0'              // existing value left alone
+            checksumsFile.text.contains 'checksum.jar='              // checksum property exists
+            !checksumsFile.text.contains('checksum.jar=nochecksum')  // previous value overwritten
     }
 
     def 'Pluging extension allows overriding of defaults'() {
 
         when:
-        createBuildFile( """
-            checksum {
-                propertyFile='foo/bar.properties'
-                tasks {
-                    jar { }
+            createBuildFile("""
+                checksum {
+                    propertyFile='foo/bar.properties'
+                    tasks {
+                        jar { }
+                    }
                 }
-            }
-        """)
-        BuildResult result = build SaveChecksumsTask.NAME
-        File checksumsFile = new File("${projectDir}/foo/bar.properties")
+            """)
+            build SaveChecksumsTask.NAME
+            File checksumsFile = new File("${projectDir}/foo/bar.properties")
 
         then:
-        checksumsFile.exists()
-        checksumsFile.text.contains 'checksum.jar='
+            checksumsFile.exists()
+            checksumsFile.text.contains 'checksum.jar='
     }
 
-    private createBuildFile( String pluginExt ) {
+    private createBuildFile(String pluginExt) {
         buildFile = tempDir.newFile('build.gradle')
 
         buildFile << """
@@ -146,6 +146,5 @@ class ChecksumFunctionalSpec extends Specification {
                 archives sourcesJar
             }
         """
-
     }
 }

@@ -30,39 +30,72 @@ class SourceChecksumTaskSpec extends Specification {
 
     SourceChecksumTask task
 
-    // File checksumsFile
-
-
     def setup() {
         File buildDir = tempDir.newFolder()
 
         project = ProjectBuilder.builder().withProjectDir(buildDir).build()
 
-
         project.extensions.create(ChecksumExtension.NAME, ChecksumExtension)
         task = project.tasks.create('sourceChecksum', SourceChecksumTask)
-
-        // checksumsFile = tempDir.newFile()
-        // task.pluginExt.checksumsPropertyFile = project.relativePath checksumsFile
     }
 
     def "sourceFileList should return a sorted list of file paths relative to the project dir"() {
         when:
-        task.source = project.files(
-                createFile("${project.projectDir}/c"),
-                createFile("${project.projectDir}/a"),
-                createFile("${project.projectDir}/b")
-        )
+            task.source = project.files(createSourceFiles())
+            List sourceFileList = task.sourceFileList
+            File sourceFileListing = task.createSourceFileListing()
 
         then:
-        task.sourceFileList == ['a','b','c']
+            sourceFileList == ['a', 'b', 'c']
+            sourceFileListing.text == 'a\nb\nc'
     }
 
+    def "checksums should be non-blank and consistent for the same source files"() {
+        when: 'A checksum is produced'
+            def sourceFiles = createSourceFiles()
+            task.source = project.files(sourceFiles)
+            task.compute()
+            String firstChecksum = task.checksum
 
+        and: 'Project is reset with the same source files and checksum is recomputed'
+            assert project.buildDir.deleteDir()
+            sourceFiles.each { assert it.delete() }
+            createSourceFiles()
+            task.compute()
+            String secondChecksum = task.checksum
+
+        then: 'checksums are consistent'
+            firstChecksum == secondChecksum
+    }
+
+    def "A source file renaming should yield a different checksum"() {
+        when: 'A checksum is produced'
+            File sourceFile = createFile("${project.projectDir}/foo.txt")
+            task.source = project.file(sourceFile)
+            task.compute()
+            String firstChecksum = task.checksum
+
+        and: 'Source file is renamed and the checksum recomputed'
+            assert project.buildDir.deleteDir(), 'could not delete project.buildDir'
+            assert sourceFile.renameTo("${project.projectDir}/bar.txt"), 'could not rename test file'
+            task.source = project.file("${project.projectDir}/bar.txt")
+            task.compute()
+            String secondChecksum = task.checksum
+
+        then: 'The checksums should be different'
+            firstChecksum != secondChecksum
+    }
+
+    private File[] createSourceFiles() {
+        [createFile("${project.projectDir}/c"),
+         createFile("${project.projectDir}/a"),
+         createFile("${project.projectDir}/b")]
+    }
 
     private File createFile(String name) {
         File file = new File(name)
         file.createNewFile()
+        file << name
         file
     }
 }

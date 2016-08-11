@@ -21,8 +21,12 @@ import org.gradle.api.tasks.SourceTask
 import org.gradle.api.tasks.TaskAction
 
 
+/**
+ * Class used for implementing individual checksum computation tasks.  Checksum computation is done against
+ * either a task's source file collection or output depending on how configured by the user.
+ */
 class SourceChecksumTask extends SourceTask {
-    private ChecksumExtension checksumExt = project.extensions.findByName(ChecksumExtension.NAME)
+    private final ChecksumExtension checksumExt = project.extensions.findByName(ChecksumExtension.NAME)
 
     String group = ChecksumPlugin.TASK_GROUP
 
@@ -31,10 +35,13 @@ class SourceChecksumTask extends SourceTask {
 
     String checksum
 
+    /**
+     * Name of property for which the checksum value should be saved under within the checksum propertyfile
+     */
     private String propertyName
 
     String getPropertyName() {
-        return propertyName
+        propertyName
     }
 
     void setPropertyName(String propertyName) {
@@ -46,29 +53,29 @@ class SourceChecksumTask extends SourceTask {
 
     @TaskAction
     def compute() {
-        println ":${name}: calculating checksum"
+        logger.lifecycle ":${name} calculating checksum"
 
         checksumsDir.mkdirs()
 
         File sourceFileListing = createSourceFileListing()
 
-        println(":${name} files included:")
+        logger.lifecycle(":${name} files included:")
 
-        String totalProp = "${name}.total.checksum"
+        String totalProp = "${name}.total.checksum.${System.nanoTime()}"
 
         ant.checksum(totalproperty: totalProp, algorithm: checksumExt.algorithm,  todir: checksumsDir) {
             fileset(dir: project.projectDir) {
-                println(":${name}   ${project.relativePath(sourceFileListing)}")
+                logger.lifecycle(":${name}   ${project.relativePath(sourceFileListing)}")
                 include name: project.relativePath(sourceFileListing)
                 source.each {
-                    println ":${name}   ${project.relativePath(it)}"
+                    logger.lifecycle ":${name}   ${project.relativePath(it)}"
                     include name: project.relativePath(it)
                 }
             }
         }
         checksum = ant.properties[totalProp]
 
-        println ":${name} result: ${checksum}"
+        logger.lifecycle ":${name} result: ${checksum}"
     }
 
     /**
@@ -80,17 +87,23 @@ class SourceChecksumTask extends SourceTask {
      *
      * @return Sorted list of file path strings of all files
      */
-    List<String> getSourceFileList() {
+    protected List<String> getSourceFileList() {
         source.collect{ project.relativePath(it) }.sort()
     }
 
     /**
      * Creates a file in the configured checksums location containing a sorted list of source files.
      *
-     * @return
+     * @return File instance of the newly created source file listing
      */
-    File createSourceFileListing() {
+    protected File createSourceFileListing() {
         File fileListing = project.file "${checksumsDir}/source-files.txt"
+
+        if (fileListing.exists()) {
+            fileListing.delete()
+        }
+
+        fileListing.parentFile.mkdirs()
 
         fileListing.createNewFile()
 

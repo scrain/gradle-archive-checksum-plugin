@@ -18,15 +18,36 @@ package com.scrain.gradle
 
 import groovy.transform.ToString
 
+
+/**
+ * Class used as part of ChecksumExtension.tasks collection to configure a checksum to be computed for a gradle task.
+ */
 @ToString
 class ChecksumItem {
-    String name
-
-    boolean useSource = true
-
-    String taskName
+    ChecksumItem() { }
 
     ChecksumItem(String name) {
         this.name = name
     }
+
+    /**
+     * Name of task for which a checksum should be computed
+     */
+    String name
+
+    /**
+     *  boolean indicating if the task's source should be used to compute the checksum (default).  If useSource
+     *  is false, then the task's output is used.
+     */
+    boolean useSource = true
+
+    /**
+     * Name to use for the checksum task that will be created
+     */
+    String taskName
+
+    /**
+     * Name to use for the checksum task that will be created
+     */
+    String propertyName
 }

@@ -20,12 +20,15 @@ import org.gradle.api.DefaultTask
 import org.gradle.api.GradleException
 import org.gradle.api.tasks.TaskAction
 
+/**
+ * Gradle task class for saving all computed checksums to the configured checksum property file
+ */
 class SaveChecksumsTask extends DefaultTask {
     protected static final String NAME = 'saveChecksums'
 
     String group = ChecksumPlugin.TASK_GROUP
 
-    private ChecksumExtension checksumExt = project.extensions.findByName(ChecksumExtension.NAME)
+    private final ChecksumExtension checksumExt = project.extensions.findByName(ChecksumExtension.NAME)
 
     @TaskAction
     def save() {
@@ -42,7 +45,7 @@ class SaveChecksumsTask extends DefaultTask {
         File checksumsFile = project.file checksumExt.propertyFile
 
         if (!checksumsFile.exists()) {
-            logger.info ":${name} checksums file does not exist, creating"
+            logger.lifecycle ":${name} checksums file does not exist, creating"
             checksumsFile.parentFile.mkdirs()
             checksumsFile.createNewFile()
         } else if (!checksumsFile.isFile()) {
@@ -52,16 +55,16 @@ class SaveChecksumsTask extends DefaultTask {
     }
 
     protected void writeChecksum(File file, String key, String value, boolean keyAlreadyExists) {
-        value = value ?: ''
+        String val = value ?: ''
         if (keyAlreadyExists) {
-            logger.info( ":${name} updating: ${key}=${value}")
+            logger.lifecycle( ":${name} updating - ${key}=${val}")
             project.ant.replaceregexp(file: file, byline: true) {
                 regexp(pattern: "^(\\s*)$key((\\s*[=|:]\\s*)|(\\s+)).*\$")
-                substitution(expression: "\\1$key\\2$value")
+                substitution(expression: "\\1$key\\2$val")
             }
         } else {
-            logger.info( ":${name} adding:   ${key}=${value}")
-            file << "\n${key}=${value}"
+            logger.lifecycle( ":${name} adding -   ${key}=${val}")
+            file << "\n${key}=${val}"
         }
     }
 

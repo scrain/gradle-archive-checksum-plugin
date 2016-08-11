@@ -39,8 +39,8 @@ class SaveChecksumsTasksSpec extends Specification {
         project = ProjectBuilder.builder().withProjectDir(tempDir.newFolder()).build()
         project.extensions.create(ChecksumExtension.NAME, ChecksumExtension)
 
-        checksumTask              = project.tasks.create('testChecksum', SourceChecksumTask)
-        checksumTask.checksum     = '123'
+        checksumTask = project.tasks.create('testChecksum', SourceChecksumTask)
+        checksumTask.checksum = '123'
         checksumTask.propertyName = 'testChecksum'
 
         saveChecksumsTask = project.tasks.create(SaveChecksumsTask.NAME, SaveChecksumsTask)
@@ -50,67 +50,66 @@ class SaveChecksumsTasksSpec extends Specification {
 
     def 'When checksums file does not exist, it is created and the new checksum is written'() {
         when:
-        assert checksumsFile.exists() == false
-        saveChecksumsTask.save()
-
+            assert checksumsFile.exists() == false
+            saveChecksumsTask.save()
 
         then:
-        checksumsFile.exists()
-        checksumsFile.text.contains "testChecksum=123"
+            checksumsFile.exists()
+            checksumsFile.text.contains "testChecksum=123"
     }
 
     def 'When checksums file exists but does not contain a previous checksum, the new checksum is written'() {
         when:
-        checksumsFile << PROPFILE_COMMENTS
-        checksumsFile << 'bar=foo'
-        checksumsFile << PROPFILE_OTHER_PROPERTIES
-        saveChecksumsTask.save()
+            checksumsFile << PROPFILE_COMMENTS
+            checksumsFile << 'bar=foo'
+            checksumsFile << PROPFILE_OTHER_PROPERTIES
+            saveChecksumsTask.save()
 
         then:
-        checksumsFile.text.contains(PROPFILE_COMMENTS)
-        checksumsFile.text.contains(PROPFILE_OTHER_PROPERTIES)
-        checksumsFile.text.contains('bar=foo')
-        checksumsFile.text.contains('testChecksum=123')
+            checksumsFile.text.contains(PROPFILE_COMMENTS)
+            checksumsFile.text.contains(PROPFILE_OTHER_PROPERTIES)
+            checksumsFile.text.contains('bar=foo')
+            checksumsFile.text.contains('testChecksum=123')
     }
 
     def 'When checksums file exists and contain a previous checksum, the new checksum is written'() {
         when:
-        checksumsFile << PROPFILE_COMMENTS
-        checksumsFile << ' testChecksum = oldbar' // make sure extra whitespace can
-        checksumsFile << PROPFILE_OTHER_PROPERTIES
-        saveChecksumsTask.save()
+            checksumsFile << PROPFILE_COMMENTS
+            checksumsFile << ' testChecksum = oldbar' // make sure extra whitespace can
+            checksumsFile << PROPFILE_OTHER_PROPERTIES
+            saveChecksumsTask.save()
 
         then:
-        checksumsFile.text.contains(PROPFILE_COMMENTS)
-        checksumsFile.text.contains(PROPFILE_OTHER_PROPERTIES)
-        checksumsFile.text.contains('testChecksum = 123')
-        !checksumsFile.text.contains('oldbar')
+            checksumsFile.text.contains(PROPFILE_COMMENTS)
+            checksumsFile.text.contains(PROPFILE_OTHER_PROPERTIES)
+            checksumsFile.text.contains('testChecksum = 123')
+            !checksumsFile.text.contains('oldbar')
     }
 
     def 'When checksums file exists and contain a previous checksum with empty value, the new checksum is written'() {
         when:
-        checksumsFile << PROPFILE_COMMENTS
-        checksumsFile << 'testChecksum='
-        checksumsFile << PROPFILE_OTHER_PROPERTIES
-        saveChecksumsTask.save()
+            checksumsFile << PROPFILE_COMMENTS
+            checksumsFile << 'testChecksum='
+            checksumsFile << PROPFILE_OTHER_PROPERTIES
+            saveChecksumsTask.save()
 
         then:
-        checksumsFile.text.contains(PROPFILE_COMMENTS)
-        checksumsFile.text.contains(PROPFILE_OTHER_PROPERTIES)
-        checksumsFile.text.contains('testChecksum=123')
+            checksumsFile.text.contains(PROPFILE_COMMENTS)
+            checksumsFile.text.contains(PROPFILE_OTHER_PROPERTIES)
+            checksumsFile.text.contains('testChecksum=123')
     }
 
     def 'When checksums file is a folder, GradleException is thrown'() {
         when:
-        checksumsFile = tempDir.newFolder()
-        project.checksum.propertyFile = project.relativePath checksumsFile
-        saveChecksumsTask.save()
+            checksumsFile = tempDir.newFolder()
+            project.checksum.propertyFile = project.relativePath checksumsFile
+            saveChecksumsTask.save()
 
         then:
-        thrown(GradleException)
+            thrown(GradleException)
     }
 
-    final String PROPFILE_COMMENTS = """
+    final static String PROPFILE_COMMENTS = """
 
 # comments with testChecksum=XXX in them
 
@@ -122,7 +121,7 @@ class SaveChecksumsTasksSpec extends Specification {
 
 """
 
-    final String PROPFILE_OTHER_PROPERTIES = """
+    final static String PROPFILE_OTHER_PROPERTIES = """
 
 # other properties
 unrelated=1234

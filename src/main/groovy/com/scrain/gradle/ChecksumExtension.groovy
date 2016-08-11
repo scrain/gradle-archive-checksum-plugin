@@ -21,10 +21,19 @@ import groovy.text.TemplateEngine
 import org.gradle.api.NamedDomainObjectCollection
 import org.gradle.api.Project
 
+/**
+ * Plugin extension for checksum plugin.
+ */
 class ChecksumExtension {
+    protected static final String ALG_MD5 = 'md5'
+
+    protected static final String ALG_SHA1 = 'sha1'
+
+    protected static final String[] ALGORITHMS = [ALG_MD5, ALG_SHA1]
+
     protected static final String NAME = 'checksum'
 
-    private TemplateEngine engine = new SimpleTemplateEngine()
+    private final TemplateEngine engine = new SimpleTemplateEngine()
 
     ChecksumExtension() { }
 
@@ -34,26 +43,29 @@ class ChecksumExtension {
 
     String propertyFile = 'checksums.properties'
 
+    @SuppressWarnings('GStringExpressionWithinString')
     String propertyNameTemplate = 'checksum.${name}'
 
+    @SuppressWarnings('GStringExpressionWithinString')
     String taskNameTemplate = '${name}Checksum'
 
-    private String algorithm = 'sha1'
+    private String algorithm = ALG_SHA1
 
     String getAlgorithm() {
-        return algorithm
+        algorithm
     }
 
     void setAlgorithm(String algorithm) {
-        if ( ['md5', 'sha1'].contains(algorithm) ) {
+        if ( ALGORITHMS.contains(algorithm) ) {
             this.algorithm = algorithm
         } else {
-            throw new IllegalArgumentException("algorithm '${algorithm}' is invalid.  Posible values: 'md5', 'sha1' ")
+            throw new IllegalArgumentException("algorithm '${algorithm}' is invalid.  Posible values: ${ALGORITHMS} ")
         }
     }
 
     NamedDomainObjectCollection<ChecksumItem> tasks
 
+    @SuppressWarnings('ConfusingMethodName')
     void tasks(Closure closure) {
         tasks.configure(closure)
     }
@@ -67,8 +79,8 @@ class ChecksumExtension {
     }
 
     protected String checksumPropertyName(ChecksumItem item) {
-        if (item.taskName) {
-            item.taskName
+        if (item.propertyName) {
+            item.propertyName
         } else {
             engine.createTemplate(propertyNameTemplate).make( ['name': item.name] ).toString()
         }

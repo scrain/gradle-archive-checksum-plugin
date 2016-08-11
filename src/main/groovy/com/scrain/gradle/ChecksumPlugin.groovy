@@ -21,8 +21,12 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.Task
 
+
+/**
+ *  Main plugin implementation for the gradle checksum-plugin
+ */
 class ChecksumPlugin implements Plugin<Project> {
-    protected final static String TASK_GROUP = "Checksum Tasks"
+    protected final static String TASK_GROUP = 'Checksum Tasks'
 
     private ChecksumExtension checksumExt
 
@@ -37,7 +41,7 @@ class ChecksumPlugin implements Plugin<Project> {
 
         project.afterEvaluate {
             checksumExt.tasks.each { ChecksumItem item ->
-                println ":checksum-plugin: item - ${item}"
+                project.logger.lifecycle ":checksum-plugin item - ${item}"
                 createChecksumTask(project, item)
             }
         }
@@ -52,7 +56,7 @@ class ChecksumPlugin implements Plugin<Project> {
 
         String checksumTaskName = checksumExt.checksumTaskName(item)
 
-        println ":checksum-plugin: configuring checksum task ${checksumTaskName}"
+        project.logger.lifecycle ":checksum-plugin configuring checksum task ${checksumTaskName}"
 
         Task checksumTask = project.tasks.create(checksumTaskName, SourceChecksumTask)
 
@@ -70,7 +74,10 @@ class ChecksumPlugin implements Plugin<Project> {
             throw new GradleException("Task '${item.name}' not found")
         }
 
-        if (task instanceof SourceChecksumTask || task instanceof SaveChecksumsTask || task instanceof ComputeChecksumsTask) {
+        if (task instanceof SourceChecksumTask ||
+                task instanceof SaveChecksumsTask ||
+                task instanceof ComputeChecksumsTask) {
+
             throw new GradleException("Task '${item.name}' is a checksum plugin task")
         }
 
