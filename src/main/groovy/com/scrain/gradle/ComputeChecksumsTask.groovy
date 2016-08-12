@@ -29,6 +29,7 @@ class ComputeChecksumsTask extends DefaultTask {
 
     @TaskAction
     def computeChecksums() {
-        logger.lifecycle ":${name} computed checksums"
+        // just a placeholder for now... maybe not worth keeping as a class long term
+        logger.info ":${name} done"
     }
 }

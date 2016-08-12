@@ -36,7 +36,7 @@ class SaveChecksumsTask extends DefaultTask {
 
         Properties existingProperties = loadProperties(checksumsFile)
 
-        project.tasks.withType(SourceChecksumTask) {
+        project.tasks.findAll{ it instanceof SourceChecksumTask }.each{ SourceChecksumTask it ->
             writeChecksum(checksumsFile, it.propertyName, it.checksum, existingProperties.containsKey(it.propertyName))
         }
     }

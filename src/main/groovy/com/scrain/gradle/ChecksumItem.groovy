@@ -23,7 +23,7 @@ import groovy.transform.ToString
  * Class used as part of ChecksumExtension.tasks collection to configure a checksum to be computed for a gradle task.
  */
 @ToString
-class ChecksumItem {
+class ChecksumItem extends BaseExtension {
     ChecksumItem() { }
 
     ChecksumItem(String name) {
@@ -36,18 +36,21 @@ class ChecksumItem {
     String name
 
     /**
-     *  boolean indicating if the task's source should be used to compute the checksum (default).  If useSource
-     *  is false, then the task's output is used.
+     * Item level override to indicate if task.source should be used for checksum calculation.
+     * Possible values: 'true', 'false', 'auto'.
+     * If not set, the value in ChecksumExtension is used.
      */
-    boolean useSource = true
+    String useSource
 
     /**
-     * Name to use for the checksum task that will be created
+     * Item level override to set the task name for the checksum task that will be created
+     * If not set, ChecksumExtension.taskNameTemplate will be used to generate the name automatically.
      */
     String taskName
 
     /**
-     * Name to use for the checksum task that will be created
+     * Item level override to set the name of property under which the checksum will be stored if saved.
+     * If not set, ChecksumExtension.propertyNameTemplate will be used to generate the name automatically.
      */
     String propertyName
 }

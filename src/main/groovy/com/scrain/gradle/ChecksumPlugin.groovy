@@ -20,7 +20,7 @@ import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.Task
-
+import org.gradle.api.tasks.AbstractCopyTask
 
 /**
  *  Main plugin implementation for the gradle checksum-plugin
@@ -28,7 +28,7 @@ import org.gradle.api.Task
 class ChecksumPlugin implements Plugin<Project> {
     protected final static String TASK_GROUP = 'Checksum Tasks'
 
-    private ChecksumExtension checksumExt
+    protected ChecksumExtension checksumExt
 
     void apply(Project project) {
         checksumExt = project.extensions.create(ChecksumExtension.NAME, ChecksumExtension, project)
@@ -40,10 +40,7 @@ class ChecksumPlugin implements Plugin<Project> {
         saveChecksums.dependsOn computeChecksums
 
         project.afterEvaluate {
-            checksumExt.tasks.each { ChecksumItem item ->
-                project.logger.lifecycle ":checksum-plugin item - ${item}"
-                createChecksumTask(project, item)
-            }
+            createChecksumTasks(project)
         }
 
         project.tasks.withType(SourceChecksumTask) {
@@ -51,23 +48,56 @@ class ChecksumPlugin implements Plugin<Project> {
         }
     }
 
-    private Task createChecksumTask( Project project, ChecksumItem item ) {
-        Task task = findTask(project, item)
+    protected List<SourceChecksumTask> createChecksumTasks(Project project) {
+        List<SourceChecksumTask> tasks = []
+
+        checksumExt.tasks.each { ChecksumItem item ->
+            project.logger.lifecycle ":checksum-plugin item - ${item}"
+            tasks << createChecksumTask(project, item)
+        }
+
+        tasks
+    }
+
+    protected SourceChecksumTask createChecksumTask( Project project, ChecksumItem item ) {
+        Task task = findTaskForChecksumCalculation(project, item)
 
         String checksumTaskName = checksumExt.checksumTaskName(item)
 
         project.logger.lifecycle ":checksum-plugin configuring checksum task ${checksumTaskName}"
 
-        Task checksumTask = project.tasks.create(checksumTaskName, SourceChecksumTask)
+        SourceChecksumTask checksumTask = project.tasks.create(checksumTaskName, SourceChecksumTask)
 
         checksumTask.description  = "Generates checksum for ${item.useSource?'sources':'output'} of task '${task.name}'"
         checksumTask.propertyName = checksumExt.checksumPropertyName(item)
-        checksumTask.source       = item.useSource ? task.source : task
+
+        checksumTask.source       = checksumSource(item, task)
 
         checksumTask
     }
 
-    private Task findTask(Project project, ChecksumItem item) {
+
+    protected Object checksumSource(ChecksumItem item, Task task) {
+        String useTaskSource = item.useSource ?: checksumExt.useTaskSource  // item overrides checksumExt
+
+        if (ChecksumExtension.USE_SOURCE_AUTO.equalsIgnoreCase(useTaskSource)) {
+            return taskHasSource(task) ? task.source : task
+        }
+
+        if (useTaskSource.toBoolean() && ! taskHasSource(task) ) {
+            throw new GradleException(
+                "Invalid checksum configuration: Task '${task.name}' has no source for computing a checksum."
+            )
+        }
+
+        useTaskSource.toBoolean() ? task.source : task
+    }
+
+    private boolean taskHasSource( Task task ) {
+        task instanceof AbstractCopyTask // TODO: other classes might support source?
+    }
+
+    protected Task findTaskForChecksumCalculation(Project project, ChecksumItem item) {
         Task task = project.tasks.findByName(item.name)
 
         if (!task) {

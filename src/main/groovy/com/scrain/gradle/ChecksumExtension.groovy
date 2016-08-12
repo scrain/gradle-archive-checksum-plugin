@@ -25,7 +25,7 @@ import org.gradle.api.Project
  * Plugin extension for checksum plugin.
  */
 class ChecksumExtension {
-    protected static final String[] USE_SOURCE_OPTIONS = [Boolean.TRUE.toString(), Boolean.FALSE.toString(), 'auto']
+    protected static final String USE_SOURCE_AUTO = 'auto'
 
     protected static final String NAME = 'checksum'
 
@@ -36,6 +36,8 @@ class ChecksumExtension {
     ChecksumExtension(Project project) {
         tasks = project.container(ChecksumItem)
     }
+
+    String useTaskSource = USE_SOURCE_AUTO
 
     String propertyFile = 'checksums.properties'
 

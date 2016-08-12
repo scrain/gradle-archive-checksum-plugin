@@ -1,12 +1,61 @@
+= Gradle Checksum Plugin
+
+image:https://travis-ci.org/scrain/gradle-checksum-plugin.svg?branch=master["Build Status", link="https://travis-ci.org/scrain/gradle-checksum-plugin"]
+
+== Purpose
+This plugin is provides the ability to compute useful checksums for most Gradle tasks.  The primary driver was to
+have a mechanism my which a build could detect if an assembled artifact was the same as the one that was previously
+published and if so, skip the publishing step.
+
+== Approach
+This plugin allows checksums to be computed for a task in one of two ways.
+
+Using the below checksum configuration, tasks can be identified that for which checksums should be computed.
 
 
-checksums on artifacts
+== Applying
+----
+buildscript {
+     repositories {
+         mavenLocal()
+     }
+     dependencies {
+         classpath 'com.scrain.gradle:checksum-plugin:0.1.5'
+     }
+}
+apply plugin: 'com.scrain.checksum-plugin'
+----
 
-checksum on pom
+== Configuring
 
+----
+checksum {
+    propertyFile = 'checksums.properties'
 
-Prior to groovy 2.4 the groovy compiler embedded timestamps within the class directly
+    algorithm = 'sha1'
 
-http://www.groovy-lang.org/mailing-lists.html#nabble-td365696
+    useTaskSource = true
 
-https://github.com/groovy/groovy-core/commit/bcdb89e
+    taskNameTemplate = '${task}Checksum'
+
+    propertyNameTemplate = 'checksum.${task}'
+
+    tasks {
+        task1 {
+            useSource = true
+            taskName = null
+            propertyName = null
+        }
+    }
+}
+----
+
+=== Limitations
+
+Prior to groovy 2.4 the groovy compiler embedded timestamps directly within the class files.  Because of this the
+checksums for compiled classes will always be different between builds making them useless for detecting material
+changes between builds.  See the following references for more detail.
+
+* http://www.groovy-lang.org/mailing-lists.html#nabble-td365696
+
+* https://github.com/groovy/groovy-core/commit/bcdb89e
