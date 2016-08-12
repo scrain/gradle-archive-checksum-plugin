@@ -85,3 +85,17 @@ cobertura {
     coverageIgnoreTrivial = true
 }
 
+codenarcMain.dependsOn 'cobertura' // required for CrapMetric rules
+
+task checkNoDaemon() {
+    doLast {
+        if ( System.properties.'sun.java.command'.contains('launcher.daemon') ) {
+            throw new GradleException("Cobertura cannot be run under the gradle daemon for this project due to: https://github.com/stevesaliman/gradle-cobertura-plugin/issues/89  Please add --no-daemon flag.")
+        }
+    }
+}
+
+project.tasks['cobertura'].dependsOn checkNoDaemon
+clean.shouldRunAfter checkNoDaemon
+build.shouldRunAfter checkNoDaemon
+test.shouldRunAfter checkNoDaemon
