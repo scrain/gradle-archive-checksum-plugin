@@ -13,18 +13,18 @@ This plugin allows checksums to be computed for a task in one of two ways.
 Using the below checksum configuration, tasks can be identified that for which checksums should be computed.
 
 
-== Applying
-----
-buildscript {
-     repositories {
-         mavenLocal()
-     }
-     dependencies {
-         classpath 'com.scrain.gradle:checksum-plugin:0.1.5'
-     }
-}
-apply plugin: 'com.scrain.checksum-plugin'
-----
+//== Applying
+//----
+//buildscript {
+//     repositories {
+//         mavenLocal()
+//     }
+//     dependencies {
+//         classpath 'com.scrain.gradle:checksum-plugin:0.1.5'
+//     }
+//}
+//apply plugin: 'com.scrain.checksum-plugin'
+//----
 
 == Configuring
 
