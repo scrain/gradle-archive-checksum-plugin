@@ -1,16 +1,21 @@
+:icons: font
+:sectanchors:
 = Gradle Checksum Plugin
-
 image:https://travis-ci.org/scrain/gradle-checksum-plugin.svg?branch=master["Build Status", link="https://travis-ci.org/scrain/gradle-checksum-plugin"]
 
 == Purpose
-This plugin is provides the ability to compute useful checksums for most Gradle tasks.  The primary driver was to
-have a mechanism my which a build could detect if an assembled artifact was the same as the one that was previously
+This plugin is provides the ability to compute useful checksums for Gradle tasks.  The primary driver is to
+have a mechanism by which it can be detected if an assembled artifact was the same as the one that was previously
 published and if so, skip the publishing step.
 
-== Approach
-This plugin allows checksums to be computed for a task in one of two ways.
+== Installation
+TBD.  Plugin is still in development.  This section will be updated once published.
 
-Using the below checksum configuration, tasks can be identified that for which checksums should be computed.
+== Approach
+Using a configuration extension, tasks can be identified for which checksums should be calculated.  Checksums can be
+computed from a task using files identified in its inputs, outputs or both.  For each task identified within the
+configuration, a corresponding task of type `com.scrain.gradle.SourceChecksumTask` is created that performs
+the checksum calculation.
 
 
 //== Applying
@@ -26,33 +31,119 @@ Using the below checksum configuration, tasks can be identified that for which c
 //apply plugin: 'com.scrain.checksum-plugin'
 //----
 
-== Configuring
+== Configuration
 
+[source,groovy]
+.Example checksum configuration for computing a checksum for the `jar` task showing all default values
 ----
 checksum {
-    propertyFile = 'checksums.properties'
-
-    algorithm = 'sha1'
-
-    useTaskSource = true
-
-    taskNameTemplate = '${task}Checksum'
-
-    propertyNameTemplate = 'checksum.${task}'
-
-    tasks {
-        task1 {
-            useSource = true
-            taskName = null
-            propertyName = null
+    propertyFile 'checksums.properties' <1>
+    algorithm 'sha1' <2>
+    defaultSource 'auto' <3>
+    taskNameTemplate '${task}Checksum' <4>
+    propertyNameTemplate 'checksum.${task}' <5>
+    tasks { <6>
+        jar {
+            source null  <7>
+            taskName null <8>
+            propertyName null <9>
         }
     }
 }
 ----
+<1> Path and name to file in which checksum values should be stored. Can be a stand alone file or a file containing
+    values unrelated to checksums such as `gradle.properties`.
+<2> Algorithm to use for checksum calculations. Checksum calculations are performed using the Gradle's AntBuilder
+    https://ant.apache.org/manual/Tasks/checksum.html[Checksum] task, so any algorithm supported by Ant should be viable.
+<3> Controls from where the `SourceChecksumTask` should obtain files used for checksum calculations. +
+    Options are: `'auto', 'inputs', 'outputs', 'both'`.  See <<Checksum Source Configuration Options>> for more detail.
+<4> Controls the naming convention used for generated `SourceChecksumTasks`.  In the above example, the generated
+    checksum task would be `jarChecksum`.
+<5> Controls the naming convention used for the property names under which individual checksum values are stored
+    within the checksums property file.  In the above example, the generated property name would be `checksum.jar`.
+<6> It is within the `tasks { }` section of the configuration where the names of tasks should be specified for which
+    checksums should be calculated. It is possible to configure multiple tasks for which to have checksums calculated.
+<7> Source configuration override.  If not set, `defaultSource` value is used.  See <<Checksum Source Configuration Options>>
+    for more detail.
+<8> Task name configuration override.  If not set, the task name is generated is based on convention in `taskNameTemplate`.
+<9> Property name configuration override.  If not set, name is generated based on convention in `propertyNameTemplate`.
 
-=== Limitations
+[source,groovy]
+.Minimalistic example of the same above configuration, but taking advantage of default values.
+----
+checksum {
+    tasks {
+        jar { }
+    }
+}
+----
 
-Prior to groovy 2.4 the groovy compiler embedded timestamps directly within the class files.  Because of this the
+
+//=== Default checksum configuration
+//
+//|===
+//| Name | Default Value
+//
+//| `propertyFile`
+//| `'checksums.properties'`
+//
+//| `algorithm`
+//| `'sha1'`
+//
+//| `defaultSource`
+//| `'auto'`
+//|
+//
+//| `taskNameTemplate`
+//| `'${task}Checksum'`
+//|
+//
+//| `propertyNameTemplate`
+//| `'checksum.${task}'`
+//|
+//
+//| `tasks`
+//| n/a
+//|
+//
+//|===
+
+=== Checksum Source Configuration Options
+
+When the plugin generates a check task based from the `checksum` configuration block, it configures it to calculate
+the checksum from the files found within the identified task's `inputs`, `outputs` or both.  By default
+`checksum.defaultSource` is set to `auto`, but values of `inputs`, `outputs` or `both` is also supported.  In addition,
+this can be overridden for each configured task explicitly by setting its `source` option.
+
+
+[cols="1,5"]
+|===
+| Option | Description
+
+| `auto` (default)
+| Using this option will result in the checksum task being configured to use the files found in a task's inputs if
+`task.inputs.hasInputs` evaluates to true, otherwise the files found in a task's outputs are used.
+
+| `inputs`
+| Uses the files found in a task's inputs for checksum calculations
+
+| `outputs`
+| Uses the files found in a task's outputs for checksum calculations
+
+| `both`
+| Uses the files found in both a task's inputs and outputs for checksum calculations
+
+|===
+
+== Checksum Considerations
+
+=== Timestamps
+It is not uncommon for build tasks to produce output that contains timestamps or other build-time related information.
+While including these do not prevent checksums from being calculated, it will cause their values to be different for
+every new build even though nothing may have materially changed.
+
+=== Checksums on Compiled Groovy Classes
+Prior to groovy 2.4, the groovy compiler embedded timestamps directly within the class files.  Because of this the
 checksums for compiled classes will always be different between builds making them useless for detecting material
 changes between builds.  See the following references for more detail.
 
