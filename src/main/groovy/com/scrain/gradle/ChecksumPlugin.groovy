@@ -62,7 +62,7 @@ class ChecksumPlugin implements Plugin<Project> {
                 SourceChecksumTask checksumTask = createChecksumTask(project, item, task)
                 tasks << checksumTask
 
-                checksumTask.configureChecksumSource(task, item.source ?: checksumExt.sourceConfig)
+                checksumTask.configureChecksumSource(task, item.source ?: checksumExt.defaultSource)
             }
         }
         tasks

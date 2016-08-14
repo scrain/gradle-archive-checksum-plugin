@@ -45,10 +45,10 @@ class ChecksumExtension {
         this.propertyFile = propertyFile
     }
 
-    SourceConfig sourceConfig = AUTO
+    SourceConfig defaultSource = AUTO
 
-    void sourceConfig(sourceConfig) {
-        this.sourceConfig = sourceConfig
+    void defaultSource(sourceConfig) {
+        this.defaultSource = sourceConfig
     }
 
     @SuppressWarnings('GStringExpressionWithinString')
