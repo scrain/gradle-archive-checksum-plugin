@@ -16,14 +16,14 @@
 
 package com.scrain.gradle
 
+import org.gradle.api.Task
 import org.gradle.api.tasks.OutputDirectory
+import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.SourceTask
 import org.gradle.api.tasks.TaskAction
 
-
 /**
- * Class used for implementing individual checksum computation tasks.  Checksum computation is done against
- * either a task's source file collection or output depending on how configured by the user.
+ * Class used for implementing individual checksum computation tasks.
  */
 class SourceChecksumTask extends SourceTask {
     private final ChecksumExtension checksumExt = project.extensions.findByName(ChecksumExtension.NAME)
@@ -33,7 +33,13 @@ class SourceChecksumTask extends SourceTask {
     @OutputDirectory
     File checksumsDir = project.file "${project.buildDir}/checksums/${name}"
 
-    String checksum
+    @OutputFile
+    File getChecksumFile() {
+        project.file "${checksumsDir}/checksum.${checksumExt.algorithm}"
+    }
+
+    @OutputFile
+    File sourceListFile = project.file "${checksumsDir}/source-files.txt"
 
     /**
      * Name of property for which the checksum value should be saved under within the checksum propertyfile
@@ -42,6 +48,10 @@ class SourceChecksumTask extends SourceTask {
 
     String getPropertyName() {
         propertyName
+    }
+
+    String getChecksum() {
+        checksumFile.text
     }
 
     void setPropertyName(String propertyName) {
@@ -53,27 +63,27 @@ class SourceChecksumTask extends SourceTask {
 
     @TaskAction
     def compute() {
-        logger.lifecycle ":${name} calculating checksum"
-
-        checksumsDir.mkdirs()
+        assert checksumsDir.exists() ?: checksumsDir.mkdirs(), "Unable to create '${checksumsDir}'"
 
         File sourceFileListing = createSourceFileListing()
 
-        logger.lifecycle(":${name} files included:")
+        logger.info(":${name} files included:")
 
         String totalProp = "${name}.total.checksum.${System.nanoTime()}"
 
-        ant.checksum(totalproperty: totalProp, algorithm: checksumExt.algorithm,  todir: checksumsDir) {
+        ant.checksum(totalproperty: totalProp, algorithm: checksumExt.algorithm, todir: checksumsDir) {
             fileset(dir: project.projectDir) {
-                logger.lifecycle(":${name}   ${project.relativePath(sourceFileListing)}")
+                logger.info(":${name}   ${project.relativePath(sourceFileListing)}")
                 include name: project.relativePath(sourceFileListing)
                 source.each {
-                    logger.lifecycle ":${name}   ${project.relativePath(it)}"
+                    logger.info ":${name}   ${project.relativePath(it)}"
                     include name: project.relativePath(it)
                 }
             }
         }
-        checksum = ant.properties[totalProp]
+        String checksum = ant.properties[totalProp]
+
+        checksumFile << checksum
 
         logger.lifecycle ":${name} result: ${checksum}"
     }
@@ -88,7 +98,7 @@ class SourceChecksumTask extends SourceTask {
      * @return Sorted list of file path strings of all files
      */
     protected List<String> getSourceFileList() {
-        source.collect{ project.relativePath(it) }.sort()
+        source.collect { project.relativePath(it) }.sort()
     }
 
     /**
@@ -97,18 +107,45 @@ class SourceChecksumTask extends SourceTask {
      * @return File instance of the newly created source file listing
      */
     protected File createSourceFileListing() {
-        File fileListing = project.file "${checksumsDir}/source-files.txt"
+        assert sourceListFile.parentFile.exists() ?: sourceListFile.parentFile.mkdirs(),
+            "Unable to create source listing dir ${sourceListFile.parentFile}"
 
-        if (fileListing.exists()) {
-            fileListing.delete()
+        assert sourceListFile.createNewFile(), "Unable to create source listing ${sourceListFile}"
+
+        sourceListFile << sourceFileList.join('\n')
+
+        sourceListFile
+    }
+
+    /**
+     * Configures the source files using inputs and/or outputs of the given task depending on the provided sourceConfig
+     * directive.
+     *
+     * @param task - Task from which to pull inputs and/or outputs.
+     * @param sourceConfig - SourceConfig directive which ultimately drives source
+     */
+    protected void configureChecksumSource(Task task, SourceConfig sourceConfig) {
+        if (sourceConfig.includeInputs(task)) {
+            includeTaskInputsInSource(task)
         }
+        if (sourceConfig.includeOutputs(task)) {
+            includeTaskOutputsInSource(task)
+        }
+    }
 
-        fileListing.parentFile.mkdirs()
+    protected void includeTaskInputsInSource(Task task) {
+        if (!task.inputs.hasInputs) {
+            logger.warn(":${name} WARNING configuration calls to include inputs, but '${task.name}' has none!")
+        } else {
+            source task.inputs.files
+        }
+    }
 
-        fileListing.createNewFile()
-
-        fileListing << sourceFileList.join('\n')
-
-        fileListing
+    protected void includeTaskOutputsInSource(Task task) {
+        if (!task.outputs.hasOutput) {
+            logger.warn(":${name} WARNING configuration calls to include outputs, but '${task.name}' has none!")
+        } else {
+            source task.outputs.files
+        }
     }
 }

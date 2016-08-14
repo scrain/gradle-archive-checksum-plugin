@@ -20,7 +20,7 @@ import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.Task
-import org.gradle.api.tasks.AbstractCopyTask
+import org.gradle.api.logging.Logger
 
 /**
  *  Main plugin implementation for the gradle checksum-plugin
@@ -28,90 +28,68 @@ import org.gradle.api.tasks.AbstractCopyTask
 class ChecksumPlugin implements Plugin<Project> {
     protected final static String TASK_GROUP = 'Checksum Tasks'
 
-    protected ChecksumExtension checksumExt
+    private ChecksumExtension checksumExt
+
+    private Logger logger
 
     void apply(Project project) {
+        logger = project.logger
+
         checksumExt = project.extensions.create(ChecksumExtension.NAME, ChecksumExtension, project)
 
         Task computeChecksums = project.tasks.create(ComputeChecksumsTask.NAME, ComputeChecksumsTask)
 
-        Task saveChecksums = project.tasks.create(SaveChecksumsTask.NAME, SaveChecksumsTask)
+        project.tasks.withType(SourceChecksumTask).whenTaskAdded { checksumTask ->
+            computeChecksums.dependsOn checksumTask
+        }
 
+        SaveChecksumsTask saveChecksums = project.tasks.create(SaveChecksumsTask.NAME, SaveChecksumsTask)
         saveChecksums.dependsOn computeChecksums
 
         project.afterEvaluate {
             createChecksumTasks(project)
         }
 
-        project.tasks.withType(SourceChecksumTask) {
-            computeChecksums.dependsOn it
-        }
     }
 
     protected List<SourceChecksumTask> createChecksumTasks(Project project) {
         List<SourceChecksumTask> tasks = []
 
-        checksumExt.tasks.each { ChecksumItem item ->
-            project.logger.lifecycle ":checksum-plugin item - ${item}"
-            tasks << createChecksumTask(project, item)
-        }
+        project.tasks.all { task ->
+            ChecksumItem item = checksumExt.tasks.findByName(task.name)
+            if (item) {
+                logger.lifecycle ":checksum-plugin item - ${item}"
+                SourceChecksumTask checksumTask = createChecksumTask(project, item, task)
+                tasks << checksumTask
 
+                checksumTask.configureChecksumSource(task, item.source ?: checksumExt.sourceConfig)
+            }
+        }
         tasks
     }
 
-    protected SourceChecksumTask createChecksumTask( Project project, ChecksumItem item ) {
-        Task task = findTaskForChecksumCalculation(project, item)
+    protected SourceChecksumTask createChecksumTask(Project project, ChecksumItem item, Task task) {
+        validateTaskForChecksum(task)
 
         String checksumTaskName = checksumExt.checksumTaskName(item)
 
-        project.logger.lifecycle ":checksum-plugin configuring checksum task ${checksumTaskName}"
+        logger.lifecycle ":checksum-plugin configuring checksum task '${checksumTaskName}'"
 
         SourceChecksumTask checksumTask = project.tasks.create(checksumTaskName, SourceChecksumTask)
 
-        checksumTask.description  = "Generates checksum for ${item.useSource?'sources':'output'} of task '${task.name}'"
+        checksumTask.description = "Generates checksum for task '${task.name}'"
         checksumTask.propertyName = checksumExt.checksumPropertyName(item)
-
-        checksumTask.source       = checksumSource(item, task)
 
         checksumTask
     }
 
-
-    protected Object checksumSource(ChecksumItem item, Task task) {
-        String useTaskSource = item.useSource ?: checksumExt.useTaskSource  // item overrides checksumExt
-
-        if (ChecksumExtension.USE_SOURCE_AUTO.equalsIgnoreCase(useTaskSource)) {
-            return taskHasSource(task) ? task.source : task
-        }
-
-        if (useTaskSource.toBoolean() && ! taskHasSource(task) ) {
-            throw new GradleException(
-                "Invalid checksum configuration: Task '${task.name}' has no source for computing a checksum."
-            )
-        }
-
-        useTaskSource.toBoolean() ? task.source : task
-    }
-
-    private boolean taskHasSource( Task task ) {
-        task instanceof AbstractCopyTask // TODO: other classes might support source?
-    }
-
-    protected Task findTaskForChecksumCalculation(Project project, ChecksumItem item) {
-        Task task = project.tasks.findByName(item.name)
-
-        if (!task) {
-            throw new GradleException("Task '${item.name}' not found")
-        }
-
+    protected void validateTaskForChecksum(Task task) {
         if (task instanceof SourceChecksumTask ||
-                task instanceof SaveChecksumsTask ||
-                task instanceof ComputeChecksumsTask) {
+            task instanceof SaveChecksumsTask ||
+            task instanceof ComputeChecksumsTask) {
 
-            throw new GradleException("Task '${item.name}' is a checksum plugin task")
+            throw new GradleException("Task '${task.name}' is a checksum plugin task")
         }
-
-        task
     }
 
 

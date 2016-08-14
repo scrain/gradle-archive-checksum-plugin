@@ -21,18 +21,23 @@ import org.gradle.api.Project
 import org.gradle.testfixtures.ProjectBuilder
 import org.junit.Rule
 import org.junit.rules.TemporaryFolder
+import spock.lang.Shared
 import spock.lang.Specification
 
 class SaveChecksumsTasksSpec extends Specification {
     @Rule
     TemporaryFolder tempDir = new TemporaryFolder()
 
+    @Shared
     Project project
 
+    @Shared
     SourceChecksumTask checksumTask
 
+    @Shared
     SaveChecksumsTask saveChecksumsTask
 
+    @Shared
     File checksumsFile
 
     def setup() {
@@ -40,7 +45,9 @@ class SaveChecksumsTasksSpec extends Specification {
         project.extensions.create(ChecksumExtension.NAME, ChecksumExtension)
 
         checksumTask = project.tasks.create('testChecksum', SourceChecksumTask)
-        checksumTask.checksum = '123'
+        checksumTask.checksumsDir.mkdirs()
+        checksumTask.checksumFile.createNewFile()
+        checksumTask.checksumFile << '123'
         checksumTask.propertyName = 'testChecksum'
 
         saveChecksumsTask = project.tasks.create(SaveChecksumsTask.NAME, SaveChecksumsTask)
@@ -50,7 +57,7 @@ class SaveChecksumsTasksSpec extends Specification {
 
     def 'When checksums file does not exist, it is created and the new checksum is written'() {
         when:
-            assert checksumsFile.exists() == false
+            assert !checksumsFile.exists()
             saveChecksumsTask.save()
 
         then:

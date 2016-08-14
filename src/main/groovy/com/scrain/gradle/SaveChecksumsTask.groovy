@@ -18,6 +18,7 @@ package com.scrain.gradle
 
 import org.gradle.api.DefaultTask
 import org.gradle.api.GradleException
+import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.TaskAction
 
 /**
@@ -26,28 +27,35 @@ import org.gradle.api.tasks.TaskAction
 class SaveChecksumsTask extends DefaultTask {
     protected static final String NAME = 'saveChecksums'
 
+    private final ChecksumExtension checksumExt = project.extensions.findByName(ChecksumExtension.NAME)
+
     String group = ChecksumPlugin.TASK_GROUP
 
-    private final ChecksumExtension checksumExt = project.extensions.findByName(ChecksumExtension.NAME)
+    String getDescription() {
+        "Saves computed checksum values to '${project.relativePath(checksumsFile.toString())}'"
+    }
+
+    @OutputFile
+    File getChecksumsFile() {
+        project.file checksumExt.propertyFile
+    }
 
     @TaskAction
     def save() {
-        File checksumsFile = createChecksumsFile()
+        createChecksumsFile()
 
         Properties existingProperties = loadProperties(checksumsFile)
 
-        project.tasks.findAll{ it instanceof SourceChecksumTask }.each{ SourceChecksumTask it ->
+        project.tasks.findAll { it instanceof SourceChecksumTask }.each { SourceChecksumTask it ->
             writeChecksum(checksumsFile, it.propertyName, it.checksum, existingProperties.containsKey(it.propertyName))
         }
     }
 
     private File createChecksumsFile() {
-        File checksumsFile = project.file checksumExt.propertyFile
-
         if (!checksumsFile.exists()) {
-            logger.lifecycle ":${name} checksums file does not exist, creating"
-            checksumsFile.parentFile.mkdirs()
-            checksumsFile.createNewFile()
+            logger.lifecycle ":${name} checksums file does not exist, creating: ${checksumsFile}"
+            assert checksumsFile.parentFile.exists() ?: checksumsFile.parentFile.mkdirs()
+            assert checksumsFile.createNewFile(), "unable to create checksums file! ${checksumsFile}"
         } else if (!checksumsFile.isFile()) {
             throw new GradleException("checksumsFile ${checksumExt.propertyFile} is a directory!")
         }
@@ -57,13 +65,13 @@ class SaveChecksumsTask extends DefaultTask {
     protected void writeChecksum(File file, String key, String value, boolean keyAlreadyExists) {
         String val = value ?: ''
         if (keyAlreadyExists) {
-            logger.lifecycle( ":${name} updating - ${key}=${val}")
+            logger.lifecycle(":${name} updating - ${key}=${val}")
             project.ant.replaceregexp(file: file, byline: true) {
                 regexp(pattern: "^(\\s*)$key((\\s*[=|:]\\s*)|(\\s+)).*\$")
                 substitution(expression: "\\1$key\\2$val")
             }
         } else {
-            logger.lifecycle( ":${name} adding -   ${key}=${val}")
+            logger.lifecycle(":${name} adding -   ${key}=${val}")
             file << "\n${key}=${val}"
         }
     }
