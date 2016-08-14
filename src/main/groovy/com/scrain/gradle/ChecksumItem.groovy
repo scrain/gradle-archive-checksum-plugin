@@ -24,7 +24,8 @@ import groovy.transform.ToString
 @ToString(ignoreNulls = true, includeNames = true)
 @SuppressWarnings('ConfusingMethodName')
 class ChecksumItem {
-    ChecksumItem() {}
+    ChecksumItem() {
+    }
 
     ChecksumItem(String name) {
         this.name = name

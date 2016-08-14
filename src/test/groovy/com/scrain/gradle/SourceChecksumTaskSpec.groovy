@@ -144,7 +144,7 @@ class SourceChecksumTaskSpec extends Specification {
     }
 
     private Task createTask(File inputFile, File outputFile) {
-        Task task = project.tasks.create('testTask') {}
+        Task task = project.tasks.create('testTask') { }
         if (inputFile) {
             task.inputs.files inputFile
         }
