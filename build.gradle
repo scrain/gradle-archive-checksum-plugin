@@ -85,6 +85,7 @@ cobertura {
     coverageIgnoreTrivial = true
 }
 
+check.dependsOn 'cobertura'
 codenarcMain.dependsOn 'cobertura' // required for CrapMetric rules
 
 task checkNoDaemon() {
