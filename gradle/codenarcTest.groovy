@@ -284,7 +284,7 @@ ruleset {
     VariableName
 
     // rulesets/security.xml
-    FileCreateTempFile
+    // FileCreateTempFile
     InsecureRandom
     // JavaIoPackageAccess
     NonFinalPublicField
