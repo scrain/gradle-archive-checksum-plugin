@@ -50,14 +50,14 @@ class ChecksumFunctionalSpec extends Specification {
 
     def 'A build with multiple checksum task should contain a checksum task for each'() {
         when:
-            createBuildFile("""
+            createBuildFile('''
                 checksum {
                     tasks {
                         jar { }
                         sourcesJar { }
                     }
                 }
-            """)
+            ''')
             BuildResult result = build 'tasks', '--all'
 
         then:
@@ -69,14 +69,14 @@ class ChecksumFunctionalSpec extends Specification {
 
     def 'Saving checksums creates a checksum file with a value for each archive'() {
         when:
-            createBuildFile("""
+            createBuildFile('''
                 checksum {
                     tasks {
                         jar { }
                         sourcesJar { }
                     }
                 }
-            """)
+            ''')
             build SaveChecksumsTask.NAME
             File checksumsFile = new File("${projectDir}/checksums.properties")
 
@@ -88,14 +88,14 @@ class ChecksumFunctionalSpec extends Specification {
 
     def 'Checksums can be saved to a file containing other unrelated values'() {
         when:
-            createBuildFile("""
+            createBuildFile('''
                 checksum {
-                    propertyFile='gradle.properties'
+                    propertyFile 'gradle.properties'
                     tasks {
                         jar { }
                     }
                 }
-            """)
+            ''')
             build SaveChecksumsTask.NAME
             File checksumsFile = new File("${projectDir}/gradle.properties")
 
@@ -105,23 +105,43 @@ class ChecksumFunctionalSpec extends Specification {
             !checksumsFile.text.contains('checksum.jar=nochecksum')  // previous value overwritten
     }
 
-    def 'Pluging extension allows overriding of defaults'() {
+    @SuppressWarnings('GStringExpressionWithinString')
+    def 'Plugin extension allows overriding of defaults'() {
 
-        when:
-            createBuildFile("""
+        when: 'use extension to override propertyFile, task and property naming conventions'
+            createBuildFile('''
                 checksum {
-                    propertyFile='foo/bar.properties'
+                    propertyFile 'foo/bar.properties'
+                    taskNameTemplate 'checksum${task.capitalize()}'
+                    propertyNameTemplate '${task}.checksum'
                     tasks {
                         jar { }
+                        sourcesJar {
+                            propertyName 'src.checksum'
+                            taskName 'checksumSrc'
+                        }
                     }
                 }
-            """)
-            build SaveChecksumsTask.NAME
+            ''')
+            BuildResult result = build SaveChecksumsTask.NAME
             File checksumsFile = new File("${projectDir}/foo/bar.properties")
 
-        then:
+        then: 'overridden checksum task name appears in output and default checksum task name does not'
+            result.output.contains(':checksumJar')
+            result.output.contains(':checksumSrc')
+
+            !result.output.contains(':jarChecksum')
+            !result.output.contains(':sourcesJarChecksum')
+            !result.output.contains(':checksumSourcesJar')
+
+        and: 'checksum file exists with containing overridden property name and not the default property name'
             checksumsFile.exists()
-            checksumsFile.text.contains 'checksum.jar='
+            checksumsFile.text.contains('jar.checksum=')
+            checksumsFile.text.contains('src.checksum=')
+
+            !checksumsFile.text.contains('checksum.jar=')
+            !checksumsFile.text.contains('checksum.sourcesJar=')
+            !checksumsFile.text.contains('sourcesJar.checksum=')
     }
 
     private createBuildFile(String pluginExt) {
