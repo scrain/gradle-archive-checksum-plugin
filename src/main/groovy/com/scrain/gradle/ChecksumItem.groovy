@@ -18,13 +18,13 @@ package com.scrain.gradle
 
 import groovy.transform.ToString
 
-
 /**
  * Class used as part of ChecksumExtension.tasks collection to configure a checksum to be computed for a gradle task.
  */
-@ToString
-class ChecksumItem extends BaseExtension {
-    ChecksumItem() { }
+@ToString(ignoreNulls = true, includeNames = true)
+@SuppressWarnings('ConfusingMethodName')
+class ChecksumItem {
+    ChecksumItem() {}
 
     ChecksumItem(String name) {
         this.name = name
@@ -36,11 +36,14 @@ class ChecksumItem extends BaseExtension {
     String name
 
     /**
-     * Item level override to indicate if task.source should be used for checksum calculation.
-     * Possible values: 'true', 'false', 'auto'.
-     * If not set, the value in ChecksumExtension is used.
+     * Item level override to set the checksum task source configuration.  If not set, ChecksumExtension.sourceConfig
+     * will be used.
      */
-    String useSource
+    SourceConfig source
+
+    void source(source) {
+        this.source = source
+    }
 
     /**
      * Item level override to set the task name for the checksum task that will be created
@@ -48,9 +51,17 @@ class ChecksumItem extends BaseExtension {
      */
     String taskName
 
+    void taskName(taskName) {
+        this.taskName = taskName
+    }
+
     /**
      * Item level override to set the name of property under which the checksum will be stored if saved.
      * If not set, ChecksumExtension.propertyNameTemplate will be used to generate the name automatically.
      */
     String propertyName
+
+    void propertyName(propertyName) {
+        this.propertyName = propertyName
+    }
 }

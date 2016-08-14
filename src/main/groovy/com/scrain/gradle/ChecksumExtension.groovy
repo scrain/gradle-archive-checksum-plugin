@@ -16,17 +16,19 @@
 
 package com.scrain.gradle
 
+import static com.scrain.gradle.SourceConfig.AUTO
 import groovy.text.SimpleTemplateEngine
 import groovy.text.TemplateEngine
+import groovy.transform.ToString
 import org.gradle.api.NamedDomainObjectCollection
 import org.gradle.api.Project
 
 /**
  * Plugin extension for checksum plugin.
  */
+@ToString(ignoreNulls = true, includeNames = true)
+@SuppressWarnings('ConfusingMethodName')
 class ChecksumExtension {
-    protected static final String USE_SOURCE_AUTO = 'auto'
-
     protected static final String NAME = 'checksum'
 
     private final TemplateEngine engine = new SimpleTemplateEngine()
@@ -37,21 +39,40 @@ class ChecksumExtension {
         tasks = project.container(ChecksumItem)
     }
 
-    String useTaskSource = USE_SOURCE_AUTO
-
     String propertyFile = 'checksums.properties'
+
+    void propertyFile(propertyFile) {
+        this.propertyFile = propertyFile
+    }
+
+    SourceConfig sourceConfig = AUTO
+
+    void sourceConfig(sourceConfig) {
+        this.sourceConfig = sourceConfig
+    }
 
     @SuppressWarnings('GStringExpressionWithinString')
     String propertyNameTemplate = 'checksum.${task}'
 
+    void propertyNameTemplate(propertyNameTemplate) {
+        this.propertyNameTemplate = propertyNameTemplate
+    }
+
     @SuppressWarnings('GStringExpressionWithinString')
     String taskNameTemplate = '${task}Checksum'
 
+    void taskNameTemplate(taskNameTemplate) {
+        this.taskNameTemplate = taskNameTemplate
+    }
+
     String algorithm = 'sha1'
+
+    void algorithm(algorithm) {
+        this.algorithm = algorithm
+    }
 
     NamedDomainObjectCollection<ChecksumItem> tasks
 
-    @SuppressWarnings('ConfusingMethodName')
     void tasks(Closure closure) {
         tasks.configure(closure)
     }
@@ -60,7 +81,7 @@ class ChecksumExtension {
         if (item.taskName) {
             item.taskName
         } else {
-            engine.createTemplate(taskNameTemplate).make( ['task': item.name] ).toString()
+            engine.createTemplate(taskNameTemplate).make(['task': item.name]).toString()
         }
     }
 
@@ -68,7 +89,8 @@ class ChecksumExtension {
         if (item.propertyName) {
             item.propertyName
         } else {
-            engine.createTemplate(propertyNameTemplate).make( ['task': item.name] ).toString()
+            engine.createTemplate(propertyNameTemplate).make(['task': item.name]).toString()
         }
     }
 }
+
