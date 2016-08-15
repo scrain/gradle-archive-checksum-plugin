@@ -6,3 +6,5 @@ cache:
 language: groovy
 jdk:
   - oraclejdk8
+after_success:
+- ./gradlew coveralls
