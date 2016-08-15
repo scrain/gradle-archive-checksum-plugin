@@ -2,6 +2,7 @@
 :sectanchors:
 = Gradle Checksum Plugin
 image:https://travis-ci.org/scrain/gradle-checksum-plugin.svg?branch=master["Build Status", link="https://travis-ci.org/scrain/gradle-checksum-plugin"]
+image:https://coveralls.io/repos/github/scrain/gradle-checksum-plugin/badge.svg?branch=master["Coverage Status", link="https://coveralls.io/github/scrain/gradle-checksum-plugin?branch=master"]
 
 == Purpose
 This plugin is provides the ability to compute useful checksums for Gradle tasks.  The primary driver is to
