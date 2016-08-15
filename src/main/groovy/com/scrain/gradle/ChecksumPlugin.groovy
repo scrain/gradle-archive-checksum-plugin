@@ -80,6 +80,9 @@ class ChecksumPlugin implements Plugin<Project> {
         checksumTask.description = "Generates checksum for task '${task.name}'"
         checksumTask.propertyName = checksumExt.checksumPropertyName(item)
 
+        checksumTask.excludes = item.excludes
+        checksumTask.includes = item.includes
+
         checksumTask
     }
 

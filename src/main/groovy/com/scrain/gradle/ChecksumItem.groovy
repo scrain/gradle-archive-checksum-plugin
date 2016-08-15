@@ -17,19 +17,26 @@
 package com.scrain.gradle
 
 import groovy.transform.ToString
+import org.gradle.api.file.FileTreeElement
+import org.gradle.api.specs.Spec
+import org.gradle.api.tasks.util.PatternFilterable
+import org.gradle.api.tasks.util.PatternSet
 
 /**
  * Class used as part of ChecksumExtension.tasks collection to configure a checksum to be computed for a gradle task.
  */
 @ToString(ignoreNulls = true, includeNames = true)
 @SuppressWarnings('ConfusingMethodName')
-class ChecksumItem {
+class ChecksumItem implements PatternFilterable {
     ChecksumItem() {
+
     }
 
     ChecksumItem(String name) {
         this.name = name
     }
+
+    private final PatternFilterable patternSet = new PatternSet()
 
     /**
      * Name of task for which a checksum should be computed
@@ -64,5 +71,111 @@ class ChecksumItem {
 
     void propertyName(propertyName) {
         this.propertyName = propertyName
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    Set<String> getIncludes() {
+        this.patternSet.includes
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    Set<String> getExcludes() {
+        this.patternSet.excludes
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    PatternFilterable setIncludes(Iterable<String> iterable) {
+        patternSet.setIncludes(iterable)
+        this
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    PatternFilterable setExcludes(Iterable<String> iterable) {
+        patternSet.setExcludes(iterable)
+        this
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    PatternFilterable include(String... strings) {
+        patternSet.include(strings)
+        this
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    PatternFilterable include(Iterable<String> iterable) {
+        patternSet.include(iterable)
+        this
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    PatternFilterable include(Spec<FileTreeElement> spec) {
+        patternSet.include(spec)
+        this
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    PatternFilterable include(Closure closure) {
+        patternSet.include(closure)
+        this
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    PatternFilterable exclude(String... strings) {
+        patternSet.exclude(strings)
+        this
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    PatternFilterable exclude(Iterable<String> iterable) {
+        patternSet.exclude(iterable)
+        this
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    PatternFilterable exclude(Spec<FileTreeElement> spec) {
+        patternSet.exclude(spec)
+        this
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    PatternFilterable exclude(Closure closure) {
+        patternSet.exclude(closure)
+        this
     }
 }

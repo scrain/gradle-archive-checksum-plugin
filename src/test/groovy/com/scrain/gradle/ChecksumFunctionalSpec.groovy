@@ -16,40 +16,44 @@
 
 package com.scrain.gradle
 
+import static org.gradle.testkit.runner.TaskOutcome.SUCCESS
+import groovy.io.FileType
 import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.GradleRunner
 import org.junit.Rule
 import org.junit.rules.TemporaryFolder
+import spock.lang.Shared
 import spock.lang.Specification
 
 class ChecksumFunctionalSpec extends Specification {
     @Rule
     TemporaryFolder tempDir = new TemporaryFolder()
 
+    @Shared
     File projectDir
 
+    @Shared
     File buildFile
 
+    @Shared
+    File checksumsDir
+
+    @Shared
     File gradlePropertiesFile
 
     def setup() {
         projectDir = tempDir.root
+
+        createGroovyClass(projectDir)
+        checksumsDir = new File("${projectDir}/build/checksums")
+
         gradlePropertiesFile = tempDir.newFile('gradle.properties')
         gradlePropertiesFile << '\nversion = 1.0'
-        gradlePropertiesFile << '\nchecksum.jarChecksum=nochecksum'
+        gradlePropertiesFile << '\nchecksum.jar=nochecksum'
     }
 
-    private GradleRunner createAndConfigureGradleRunner(String... arguments) {
-        String[] args = arguments + '--stacktrace'
-        GradleRunner.create().withProjectDir(projectDir).withArguments(args).withPluginClasspath()
-    }
-
-    private BuildResult build(String... arguments) {
-        createAndConfigureGradleRunner(arguments).build()
-    }
-
-    def 'A build with multiple checksum task should contain a checksum task for each'() {
-        when:
+    def 'A build with multiple checksum tasks should contain expected tasks'() {
+        when: 'standard configuration including jar and sourcesJar checksums'
             createBuildFile('''
                 checksum {
                     tasks {
@@ -60,9 +64,12 @@ class ChecksumFunctionalSpec extends Specification {
             ''')
             BuildResult result = build 'tasks', '--all'
 
-        then:
+        then: 'tasks output should contain tasks for compute and saving of checksums'
+            result.task(":tasks").outcome == SUCCESS
             result.output.contains(ComputeChecksumsTask.NAME)
             result.output.contains(SaveChecksumsTask.NAME)
+
+        and: 'should also include a checksum task for each that was configured'
             result.output.contains('jarChecksum')
             result.output.contains('sourcesJarChecksum')
     }
@@ -77,13 +84,18 @@ class ChecksumFunctionalSpec extends Specification {
                     }
                 }
             ''')
-            build SaveChecksumsTask.NAME
             File checksumsFile = new File("${projectDir}/checksums.properties")
+            assert !checksumsFile.exists()
+            BuildResult result = build SaveChecksumsTask.NAME
+            Properties properties = loadProperties(checksumsFile)
 
-        then:
+        then: 'save checksum succeed and checksum file is created'
+            result.task(":${SaveChecksumsTask.NAME}").outcome == SUCCESS
             checksumsFile.exists()
-            checksumsFile.text.contains 'checksum.jar='
-            checksumsFile.text.contains 'checksum.sourcesJar='
+
+        and: 'checksum file should contain computed checksums'
+            properties['checksum.jar']
+            properties['checksum.sourcesJar']
     }
 
     def 'Checksums can be saved to a file containing other unrelated values'() {
@@ -96,13 +108,18 @@ class ChecksumFunctionalSpec extends Specification {
                     }
                 }
             ''')
-            build SaveChecksumsTask.NAME
             File checksumsFile = new File("${projectDir}/gradle.properties")
+            Properties properties = loadProperties(checksumsFile)
+            assert properties['checksum.jar'] == 'nochecksum'
+            build SaveChecksumsTask.NAME
+            properties = loadProperties(checksumsFile)
 
-        then:
-            checksumsFile.text.contains 'version = 1.0'              // existing value left alone
-            checksumsFile.text.contains 'checksum.jar='              // checksum property exists
-            !checksumsFile.text.contains('checksum.jar=nochecksum')  // previous value overwritten
+        then: 'new checksum value is written'
+            properties['checksum.jar']
+            properties['checksum.jar'] != 'nochecksum'
+
+        and: 'other unrelated values are not impacted'
+            properties['version'] == '1.0'
     }
 
     @SuppressWarnings('GStringExpressionWithinString')
@@ -144,6 +161,46 @@ class ChecksumFunctionalSpec extends Specification {
             !checksumsFile.text.contains('sourcesJar.checksum=')
     }
 
+    @SuppressWarnings('GStringExpressionWithinString')
+    def 'Include and exclude directives should be honored'() {
+
+        when: 'Configure jarChecksum to exclude and sourcesJar to include only MANIFEST.MF'
+            createBuildFile('''
+                checksum {
+                    tasks {
+                        jar {
+                            exclude '**/MANIFEST.MF'
+                        }
+                        sourcesJar {
+                            include '**/MANIFEST.MF'
+                        }
+                    }
+                }
+            ''')
+            build SaveChecksumsTask.NAME
+            String[] jarChecksumFiles = listFilesRecursive("${checksumsDir}/jarChecksum")
+            String[] sourcesChecksumFiles = listFilesRecursive("${checksumsDir}/sourcesJarChecksum")
+
+        then: 'jarChecksum should still included classes, but NOT MANIFEST.MF'
+            jarChecksumFiles.findAll { it.contains('MANIFEST.MF') }.size() == 0
+            jarChecksumFiles.findAll { it.contains('Foo.class') }.size() == 1
+
+        and: 'sourcesJarChecksum should include MANIFEST.MF, but not any source groovy files'
+            sourcesChecksumFiles.findAll { it.contains('MANIFEST.MF') }.size() == 1
+            sourcesChecksumFiles.findAll { it.contains('Foo.groovy') }.size() == 0
+
+
+    }
+
+    private GradleRunner createAndConfigureGradleRunner(String... arguments) {
+        String[] args = arguments + '--stacktrace'
+        GradleRunner.create().withProjectDir(projectDir).withArguments(args).withPluginClasspath()
+    }
+
+    private BuildResult build(String... arguments) {
+        createAndConfigureGradleRunner(arguments).build()
+    }
+
     private createBuildFile(String pluginExt) {
         buildFile = tempDir.newFile('build.gradle')
 
@@ -157,6 +214,10 @@ class ChecksumFunctionalSpec extends Specification {
 
             archivesBaseName='test'
 
+            dependencies {
+                compile localGroovy()
+            }
+
             task sourcesJar(type: Jar, dependsOn: classes) {
                 classifier = 'sources'
                 from sourceSets.main.allSource
@@ -167,4 +228,31 @@ class ChecksumFunctionalSpec extends Specification {
             }
         """
     }
+
+    private String[] listFilesRecursive(String dirName) {
+        def list = []
+        new File(dirName).eachFileRecurse(FileType.FILES) {
+            list << it.toString()
+        }
+        list
+    }
+
+    private Properties loadProperties(File file) {
+        Properties props = new Properties()
+        props.load(file.newReader())
+        props
+    }
+
+    protected File createGroovyClass(File projectDir) {
+        File groovyFile = new File("${projectDir}/src/main/groovy/com/scrain/gradle/functest/Foo.groovy")
+        groovyFile.parentFile.mkdirs()
+        groovyFile.createNewFile()
+        groovyFile << '''
+package com.scrain.gradle.functest
+class Foo{}
+'''
+        groovyFile
+    }
+
+
 }
