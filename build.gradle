@@ -88,6 +88,7 @@ cobertura {
 
 check.dependsOn 'cobertura'
 codenarcMain.dependsOn 'cobertura' // required for CrapMetric rules
+codenarcMain.shouldRunAfter 'generateCoberturaReport'
 
 task checkNoDaemon() {
     doLast {
