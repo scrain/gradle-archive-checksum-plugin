@@ -5,6 +5,7 @@
 
 image:https://travis-ci.org/scrain/gradle-checksum-plugin.svg?branch=master["Build Status", link="https://travis-ci.org/scrain/gradle-checksum-plugin"]
 image:https://coveralls.io/repos/github/scrain/gradle-checksum-plugin/badge.svg?branch=master["Coverage Status", link="https://coveralls.io/github/scrain/gradle-checksum-plugin?branch=master"]
+image:https://img.shields.io/badge/license-apache%202.0-blue.svg?style=flat["Apache 2.0", link="https://www.apache.org/licenses/LICENSE-2.0"]
 
 == Purpose
 This plugin is provides the ability to compute useful checksums for Gradle tasks.  The primary driver is to
