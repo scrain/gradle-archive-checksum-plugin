@@ -20,37 +20,31 @@ import org.gradle.api.Task
 
 enum SourceConfig {
     AUTO(
-        'auto',
         'include task inputs if task has them, otherwise include task outputs',
         { Task task -> task.inputs.hasInputs },
         { Task task -> !task.inputs.hasInputs }
     ),
     INPUTS(
-        'inputs',
         'include task inputs only',
         { Task task -> true },
         { Task task -> false }
     ),
     OUTPUTS(
-        'outputs',
         'include task outputs only',
         { Task task -> false },
         { Task task -> true }
     ),
     BOTH(
-        'both',
         'include both task inputs and outputs',
         { Task task -> true },
         { Task task -> true }
     )
 
-    final String id
     final String description
     final Closure<Boolean> includeInputs
     final Closure<Boolean> includeOutputs
 
-    private SourceConfig(String id, String desc, Closure<Boolean> includeInputs, Closure<Boolean> includeOutputs) {
-        this.id = id
+    private SourceConfig(String desc, Closure<Boolean> includeInputs, Closure<Boolean> includeOutputs) {
         this.description = desc
         this.includeInputs = includeInputs
         this.includeOutputs = includeOutputs

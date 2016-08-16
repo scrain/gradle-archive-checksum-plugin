@@ -16,10 +16,24 @@
 
 package com.scrain.gradle
 
+import static SourceConfig.*
+import org.gradle.api.Project
+import org.gradle.testfixtures.ProjectBuilder
+import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Unroll
 
 class ChecksumExtensionSpec extends Specification {
+    @Shared
+    Project project
+
+    @Shared
+    ChecksumExtension checksumExt
+
+    def setup() {
+        project = ProjectBuilder.builder().build()
+        checksumExt = project.extensions.create(ChecksumExtension.NAME, ChecksumExtension, project)
+    }
 
     @Unroll
     @SuppressWarnings('GStringExpressionWithinString')
@@ -48,4 +62,81 @@ class ChecksumExtensionSpec extends Specification {
             new ChecksumExtension()                                 | new ChecksumItem(propertyName: 'bar') | 'bar'
             new ChecksumExtension(propertyNameTemplate: 'x${task}') | new ChecksumItem(propertyName: 'bar') | 'bar'
     }
+
+    @Unroll
+    def "Source enum can be set using mixed case strings"() {
+        expect:
+            checksumExt.tasks( tasksClosure )
+            checksumExt.tasks.getByName('task').source == expectedSource
+
+        where:
+            tasksClosure                           | expectedSource
+                { -> task { } }                    | null
+                { -> task { source 'auto' } }      | AUTO
+                { -> task { source 'Auto' } }      | AUTO
+                { -> task { source 'inputs' } }    | INPUTS
+                { -> task { source 'Inputs' } }    | INPUTS
+                { -> task { source 'outputs' } }   | OUTPUTS
+                { -> task { source 'OUTPUTS' } }   | OUTPUTS
+                { -> task { source 'both' } }      | BOTH
+                { -> task { source 'Both' } }      | BOTH
+    }
+
+    def "ChecksumExtension can be configured DSL-style"() {
+
+        when: 'when values are set without using equals'
+            project.checksum {
+                propertyFile         'a'
+                taskNameTemplate     'b'
+                propertyNameTemplate 'c'
+                algorithm            'd'
+                defaultSource        'Both'
+                tasks {
+                    taskOne {
+                        source       'inputs'
+                        taskName     'e'
+                        propertyName 'f'
+                    }
+                }
+            }
+
+        then: 'closure populates extension values as expected'
+            checksumExt.propertyFile         == 'a'
+            checksumExt.taskNameTemplate     == 'b'
+            checksumExt.propertyNameTemplate == 'c'
+            checksumExt.algorithm            == 'd'
+            checksumExt.defaultSource        == BOTH
+            checksumExt.tasks.taskOne.source       == INPUTS
+            checksumExt.tasks.taskOne.taskName     == 'e'
+            checksumExt.tasks.taskOne.propertyName == 'f'
+
+
+        when: 'when values are set using equals'
+            project.checksum {
+                propertyFile         = '1'
+                taskNameTemplate     = '2'
+                propertyNameTemplate = '3'
+                algorithm            = '4'
+                defaultSource        = 'Inputs'
+                tasks {
+                    taskOne {
+                        source       = 'Outputs'
+                        taskName     = '5'
+                        propertyName = '6'
+                    }
+                }
+            }
+
+        then: 'closure populates extension values as expected'
+            checksumExt.propertyFile         == '1'
+            checksumExt.taskNameTemplate     == '2'
+            checksumExt.propertyNameTemplate == '3'
+            checksumExt.algorithm            == '4'
+            checksumExt.defaultSource        == INPUTS
+            checksumExt.tasks.taskOne.source       == OUTPUTS
+            checksumExt.tasks.taskOne.taskName     == '5'
+            checksumExt.tasks.taskOne.propertyName == '6'
+
+    }
+
 }

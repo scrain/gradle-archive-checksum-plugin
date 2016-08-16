@@ -167,6 +167,7 @@ class ChecksumFunctionalSpec extends Specification {
         when: 'Configure jarChecksum to exclude and sourcesJar to include only MANIFEST.MF'
             createBuildFile('''
                 checksum {
+                    defaultSource 'auto'
                     tasks {
                         jar {
                             exclude '**/MANIFEST.MF'

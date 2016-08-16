@@ -38,14 +38,22 @@ class ChecksumItem extends PatternSet {
      */
     String name
 
+    private SourceConfig source
+
     /**
      * Item level override to set the checksum task source configuration.  If not set, ChecksumExtension.sourceConfig
      * will be used.
      */
-    SourceConfig source
+    SourceConfig getSource() {
+        source
+    }
+
+    void setSource(source) {
+        this.source = source?.toString().toUpperCase()
+    }
 
     void source(source) {
-        this.source = source
+        this.setSource(source)
     }
 
     /**
