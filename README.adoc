@@ -13,7 +13,29 @@ have a mechanism by which it can be detected if an assembled artifact was the sa
 published and if so, skip the publishing step.
 
 == Installation
-TBD.  Plugin is still in development.  This section will be updated once published.
+
+.Gradle 2.0 and earlier
+----
+buildscript {
+    repositories {
+        maven {
+            url 'https://plugins.gradle.org/m2/'
+        }
+    }
+    dependencies {
+        classpath 'com.scrain.gradle:checksum-plugin:0.3'
+    }
+}
+
+apply plugin: 'com.scrain.checksum-plugin'
+----
+
+.Gradle 2.1 and up
+----
+plugins {
+    id 'com.scrain.checksum-plugin' version '0.3'
+}
+----
 
 == Approach
 Using a configuration extension, tasks can be identified for which checksums should be calculated.  Checksums can be
@@ -21,19 +43,6 @@ computed from a task using files identified in its inputs, outputs or both.  For
 configuration, a corresponding task of type `com.scrain.gradle.SourceChecksumTask` is created that performs
 the checksum calculation.
 
-
-//== Applying
-//----
-//buildscript {
-//     repositories {
-//         mavenLocal()
-//     }
-//     dependencies {
-//         classpath 'com.scrain.gradle:checksum-plugin:0.1.5'
-//     }
-//}
-//apply plugin: 'com.scrain.checksum-plugin'
-//----
 
 == Configuration
 
