@@ -21,8 +21,13 @@ pluginBundle {
     website = 'https://plugins.gradle.org/plugin/com.scrain.checksum-plugin'
     vcsUrl  = 'https://github.com/scrain/gradle-checksum-plugin'
 
-    description = "${project.description}"
+    description = project.description
     tags = ['checksum', 'publishing']
+
+    mavenCoordinates {
+        groupId = project.group
+        artifactId = project.name
+    }
 
     plugins {
         checksumPlugin {

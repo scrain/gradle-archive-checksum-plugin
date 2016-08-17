@@ -29,12 +29,12 @@ plugins {
     id 'idea'
 }
 
-description "A gradle plugin for computing checksums from other tasks"
+description "A gradle plugin for computing checksums for the inputs and outputs of tasks"
 
 group = 'com.scrain.gradle'
 
-sourceCompatibility = '1.6'
-targetCompatibility = '1.6'
+sourceCompatibility = 1.7
+targetCompatibility = 1.7
 
 ext {
     groovyRelease = GroovySystem.version.replaceAll(/\.\d+$/, '') // major.minor portion only
