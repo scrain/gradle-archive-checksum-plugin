@@ -39,7 +39,7 @@ class ChecksumPlugin implements Plugin<Project> {
 
         Task computeChecksums = project.tasks.create(ComputeChecksumsTask.NAME, ComputeChecksumsTask)
 
-        project.tasks.withType(SourceChecksumTask).whenTaskAdded { checksumTask ->
+        project.tasks.withType(ChecksumTask).whenTaskAdded { checksumTask ->
             computeChecksums.dependsOn checksumTask
         }
 
@@ -52,14 +52,14 @@ class ChecksumPlugin implements Plugin<Project> {
 
     }
 
-    protected List<SourceChecksumTask> createChecksumTasks(Project project) {
-        List<SourceChecksumTask> tasks = []
+    protected List<ChecksumTask> createChecksumTasks(Project project) {
+        List<ChecksumTask> tasks = []
 
         project.tasks.all { task ->
             ChecksumItem item = checksumExt.tasks.findByName(task.name)
             if (item) {
                 logger.lifecycle ":checksum-plugin item - ${item}"
-                SourceChecksumTask checksumTask = createChecksumTask(project, item, task)
+                ChecksumTask checksumTask = createChecksumTask(project, item, task)
                 tasks << checksumTask
 
                 checksumTask.configureChecksumSource(task, item.source ?: checksumExt.defaultSource)
@@ -68,14 +68,14 @@ class ChecksumPlugin implements Plugin<Project> {
         tasks
     }
 
-    protected SourceChecksumTask createChecksumTask(Project project, ChecksumItem item, Task task) {
+    protected ChecksumTask createChecksumTask(Project project, ChecksumItem item, Task task) {
         validateTaskForChecksum(task)
 
         String checksumTaskName = checksumExt.checksumTaskName(item)
 
         logger.lifecycle ":checksum-plugin configuring checksum task '${checksumTaskName}'"
 
-        SourceChecksumTask checksumTask = project.tasks.create(checksumTaskName, SourceChecksumTask)
+        ChecksumTask checksumTask = project.tasks.create(checksumTaskName, ChecksumTask)
 
         checksumTask.description = "Generates checksum for task '${task.name}'"
         checksumTask.propertyName = checksumExt.checksumPropertyName(item)
@@ -87,7 +87,7 @@ class ChecksumPlugin implements Plugin<Project> {
     }
 
     protected void validateTaskForChecksum(Task task) {
-        if (task instanceof SourceChecksumTask ||
+        if (task instanceof ChecksumTask ||
             task instanceof SaveChecksumsTask ||
             task instanceof ComputeChecksumsTask) {
 

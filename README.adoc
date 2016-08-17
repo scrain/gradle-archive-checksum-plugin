@@ -23,7 +23,7 @@ buildscript {
         }
     }
     dependencies {
-        classpath 'com.scrain.gradle:checksum-plugin:0.3'
+        classpath 'com.scrain.gradle:checksum-plugin:0.4'
     }
 }
 
@@ -33,14 +33,14 @@ apply plugin: 'com.scrain.checksum-plugin'
 .Gradle 2.1 and up
 ----
 plugins {
-    id 'com.scrain.checksum-plugin' version '0.3'
+    id 'com.scrain.checksum-plugin' version '0.4'
 }
 ----
 
 == Approach
 Using a configuration extension, tasks can be identified for which checksums should be calculated.  Checksums can be
 computed from a task using files identified in its inputs, outputs or both.  For each task identified within the
-configuration, a corresponding task of type `com.scrain.gradle.SourceChecksumTask` is created that performs
+configuration, a corresponding task of type `com.scrain.gradle.ChecksumTask` is created that performs
 the checksum calculation.
 
 
@@ -67,7 +67,7 @@ checksum {
 <2> `**checksum.algorithm**` is the algorithm to use for checksum calculations. Checksum calculations are performed using
     the Gradle's AntBuilder  https://ant.apache.org/manual/Tasks/checksum.html[Checksum] task, so any algorithm supported
     by this task should be available.
-<3> `**checksum.defaultSource**` controls from where the checksum task should obtain files to use for its checksum calculations. +
+<3> `**checksum.defaultSource**` controls from where the checksum task should obtain files to use for its checksum calculations.
     Options are: `'auto', 'inputs', 'outputs', 'both'`.  See <<Checksum Source Configuration Options>> for more detail on
     the individual options.
 <4> `**checksum.taskNameTemplate**` controls the naming convention used for generated checksum tasks.  In the above example, the generated

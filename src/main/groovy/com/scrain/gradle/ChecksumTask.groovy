@@ -26,7 +26,7 @@ import org.gradle.api.tasks.TaskAction
 /**
  * Class used for implementing individual checksum computation tasks.
  */
-class SourceChecksumTask extends SourceTask {
+class ChecksumTask extends SourceTask {
     private final ChecksumExtension checksumExt = project.extensions.findByName(ChecksumExtension.NAME)
 
     @OutputDirectory
@@ -57,7 +57,7 @@ class SourceChecksumTask extends SourceTask {
         this.propertyName = propertyName
     }
 
-    SourceChecksumTask() {
+    ChecksumTask() {
         group = ChecksumPlugin.TASK_GROUP
     }
 

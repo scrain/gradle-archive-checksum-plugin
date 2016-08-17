@@ -32,7 +32,7 @@ class SaveChecksumsTasksSpec extends Specification {
     Project project
 
     @Shared
-    SourceChecksumTask checksumTask
+    ChecksumTask checksumTask
 
     @Shared
     SaveChecksumsTask saveChecksumsTask
@@ -44,7 +44,7 @@ class SaveChecksumsTasksSpec extends Specification {
         project = ProjectBuilder.builder().withProjectDir(tempDir.newFolder()).build()
         project.extensions.create(ChecksumExtension.NAME, ChecksumExtension)
 
-        checksumTask = project.tasks.create('testChecksum', SourceChecksumTask)
+        checksumTask = project.tasks.create('testChecksum', ChecksumTask)
         checksumTask.checksumsDir.mkdirs()
         checksumTask.checksumFile.createNewFile()
         checksumTask.checksumFile << '123'

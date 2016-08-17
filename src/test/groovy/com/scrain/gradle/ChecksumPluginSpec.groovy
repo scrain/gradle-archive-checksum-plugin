@@ -60,7 +60,7 @@ class ChecksumPluginSpec extends Specification {
         when:
             checksumExt.tasks << new ChecksumItem(TASK_WITH_SOURCE)
             checksumExt.tasks << new ChecksumItem(TASK_WITHOUT_SOURCE)
-            List<SourceChecksumTask> tasks = plugin.createChecksumTasks(project)
+            List<ChecksumTask> tasks = plugin.createChecksumTasks(project)
 
         then:
             tasks.size() == 2

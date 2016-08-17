@@ -34,7 +34,7 @@ class SourceChecksumTaskSpec extends Specification {
     Project project
 
     @Shared
-    SourceChecksumTask checksumTask
+    ChecksumTask checksumTask
 
     @Shared
     File inputFile = createTempFile('input')
@@ -48,7 +48,7 @@ class SourceChecksumTaskSpec extends Specification {
         project = ProjectBuilder.builder().withProjectDir(buildDir).build()
 
         project.extensions.create(ChecksumExtension.NAME, ChecksumExtension)
-        checksumTask = project.tasks.create('sourceChecksum', SourceChecksumTask)
+        checksumTask = project.tasks.create('sourceChecksum', ChecksumTask)
     }
 
     def "sourceFileList should return a sorted list of file paths relative to the project dir"() {
