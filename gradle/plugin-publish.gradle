@@ -18,7 +18,7 @@ apply plugin: 'com.gradle.plugin-publish'
 apply plugin: 'java-gradle-plugin'
 
 pluginBundle {
-    website = 'https://plugins.gradle.org/plugin/com.scrain.checksum-plugin'
+    website = 'https://github.com/scrain/gradle-checksum-plugin'
     vcsUrl  = 'https://github.com/scrain/gradle-checksum-plugin'
 
     description = project.description
