@@ -26,12 +26,13 @@ import org.gradle.api.tasks.TaskAction
 class ComputeChecksumsTask extends DefaultTask {
     protected static final String NAME = 'computeChecksums'
 
-    String group = ChecksumPlugin.TASK_GROUP
-
-    String description = 'Executes all configured checksum tasks'
-
     @OutputDirectory
     File checksumsDir = project.file "${project.buildDir}/checksums"
+
+    ComputeChecksumsTask() {
+        group = ChecksumPlugin.TASK_GROUP
+        description = 'Executes all configured checksum tasks'
+    }
 
     @TaskAction
     def computeChecksums() {

@@ -29,15 +29,14 @@ class SaveChecksumsTask extends DefaultTask {
 
     private final ChecksumExtension checksumExt = project.extensions.findByName(ChecksumExtension.NAME)
 
-    String group = ChecksumPlugin.TASK_GROUP
-
-    String getDescription() {
-        "Saves computed checksum values to '${project.relativePath(checksumsFile.toString())}'"
-    }
-
     @OutputFile
     File getChecksumsFile() {
         project.file checksumExt.propertyFile
+    }
+
+    SaveChecksumsTask() {
+        group = ChecksumPlugin.TASK_GROUP
+        description = 'Saves computed checksum values to checksum file configured in extension checksumExt.propertyFile'
     }
 
     @TaskAction
@@ -47,7 +46,12 @@ class SaveChecksumsTask extends DefaultTask {
         Properties existingProperties = loadProperties(checksumsFile)
 
         project.tasks.findAll { it instanceof SourceChecksumTask }.each { SourceChecksumTask it ->
-            writeChecksum(checksumsFile, it.propertyName, it.checksum, existingProperties.containsKey(it.propertyName))
+            writeChecksum(
+                checksumsFile,
+                it.propertyName,
+                it.checksumFile?.text,
+                existingProperties.containsKey(it.propertyName)
+            )
         }
     }
 

@@ -54,7 +54,7 @@ class SourceChecksumTaskSpec extends Specification {
     def "sourceFileList should return a sorted list of file paths relative to the project dir"() {
         when:
             checksumTask.source = project.files(createSourceFiles())
-            List sourceFileList = checksumTask.sourceFileList
+            List sourceFileList = checksumTask.sortedSourceFileList()
             File sourceFileListing = checksumTask.createSourceFileListing()
 
         then:
@@ -67,14 +67,14 @@ class SourceChecksumTaskSpec extends Specification {
             def sourceFiles = createSourceFiles()
             checksumTask.source = project.files(sourceFiles)
             checksumTask.compute()
-            String firstChecksum = checksumTask.checksum
+            String firstChecksum = checksumTask.checksumFile.text
 
         and: 'Project is reset with the same source files and checksum is recomputed'
             assert project.buildDir.deleteDir()
             sourceFiles.each { assert it.delete() }
             createSourceFiles()
             checksumTask.compute()
-            String secondChecksum = checksumTask.checksum
+            String secondChecksum = checksumTask.checksumFile.text
 
         then: 'checksums are consistent'
             firstChecksum == secondChecksum
@@ -85,14 +85,14 @@ class SourceChecksumTaskSpec extends Specification {
             File sourceFile = createFile("${project.projectDir}/foo.txt")
             checksumTask.source = project.file(sourceFile)
             checksumTask.compute()
-            String firstChecksum = checksumTask.checksum
+            String firstChecksum = checksumTask.checksumFile.text
 
         and: 'Source file is renamed and the checksum recomputed'
             assert project.buildDir.deleteDir(), 'could not delete project.buildDir'
             assert sourceFile.renameTo("${project.projectDir}/bar.txt"), 'could not rename test file'
             checksumTask.source = project.file("${project.projectDir}/bar.txt")
             checksumTask.compute()
-            String secondChecksum = checksumTask.checksum
+            String secondChecksum = checksumTask.checksumFile.text
 
         then: 'The checksums should be different'
             firstChecksum != secondChecksum

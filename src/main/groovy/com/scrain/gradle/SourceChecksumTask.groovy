@@ -17,6 +17,7 @@
 package com.scrain.gradle
 
 import org.gradle.api.Task
+import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.SourceTask
@@ -27,8 +28,6 @@ import org.gradle.api.tasks.TaskAction
  */
 class SourceChecksumTask extends SourceTask {
     private final ChecksumExtension checksumExt = project.extensions.findByName(ChecksumExtension.NAME)
-
-    String group = ChecksumPlugin.TASK_GROUP
 
     @OutputDirectory
     File checksumsDir = project.file "${project.buildDir}/checksums/${name}"
@@ -46,12 +45,9 @@ class SourceChecksumTask extends SourceTask {
      */
     private String propertyName
 
+    @Input
     String getPropertyName() {
         propertyName
-    }
-
-    String getChecksum() {
-        checksumFile.text
     }
 
     void setPropertyName(String propertyName) {
@@ -59,6 +55,10 @@ class SourceChecksumTask extends SourceTask {
             throw new IllegalArgumentException('propertyName is required')
         }
         this.propertyName = propertyName
+    }
+
+    SourceChecksumTask() {
+        group = ChecksumPlugin.TASK_GROUP
     }
 
     @TaskAction
@@ -97,7 +97,7 @@ class SourceChecksumTask extends SourceTask {
      *
      * @return Sorted list of file path strings of all files
      */
-    protected List<String> getSourceFileList() {
+    protected List<String> sortedSourceFileList() {
         source.collect { project.relativePath(it) }.sort()
     }
 
@@ -112,7 +112,7 @@ class SourceChecksumTask extends SourceTask {
 
         assert sourceListFile.createNewFile(), "Unable to create source listing ${sourceListFile}"
 
-        sourceListFile << sourceFileList.join('\n')
+        sourceListFile << sortedSourceFileList().join('\n')
 
         sourceListFile
     }
