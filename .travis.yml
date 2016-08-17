@@ -7,7 +7,6 @@ language: groovy
 jdk:
   - oraclejdk8
 script:
-  - ./gradlew assemble
   - ./gradlew check --no-daemon
 after_success:
 - ./gradlew coveralls
