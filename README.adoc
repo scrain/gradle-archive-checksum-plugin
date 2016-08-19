@@ -57,7 +57,7 @@ checksum {
 
 publish.dependsOn computeChecksums
 publish.onlyIf {
-    // compares the latest computed checksum to those saved in `checksum.propertyFile`
+    // compares the latest computed checksum to those saved in the checksums property file.
     ! computeChecksums.sameAsPropertyFile()
 }
 publish.finalizedBy saveChecksums
