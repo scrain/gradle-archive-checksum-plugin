@@ -24,7 +24,7 @@ buildscript {
         }
     }
     dependencies {
-        classpath 'com.scrain.gradle:checksum-plugin:0.4'
+        classpath 'com.scrain.gradle:checksum-plugin:0.5'
     }
 }
 
@@ -35,7 +35,7 @@ apply plugin: 'com.scrain.checksum-plugin'
 .Gradle 2.1 and up
 ----
 plugins {
-    id 'com.scrain.checksum-plugin' version '0.4'
+    id 'com.scrain.checksum-plugin' version '0.5'
 }
 ----
 
