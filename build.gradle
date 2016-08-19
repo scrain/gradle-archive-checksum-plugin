@@ -27,7 +27,6 @@ plugins {
     id 'com.github.kt3k.coveralls' version '2.6.3'
     id 'com.gradle.plugin-publish' version '0.9.5'
 }
-apply plugin: 'com.scrain.checksum-plugin'
 
 description "A gradle plugin for computing checksums for the inputs and outputs of tasks"
 
