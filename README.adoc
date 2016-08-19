@@ -65,9 +65,9 @@ publish.finalizedBy saveChecksums
 
 With the above build configuration, executing the `publish` task will automatically execute `computeChecksums`
 and subsequently stop the `publish` task from executing if the checksum found within the checksums properties
-file match the computed value.  If the value are not the same, then the `publish` task will execute and
-be followed by `saveChecksums` task call which will update the checksum in the file.  The checksums properties
-file should subsequently be committed to version control.
+file matches the computed value.  If the value is not the same, then the `publish` task will execute and
+be followed by the `saveChecksums` task which will update the checksum in the file.  The checksums properties
+file should be maintained in version control for the project.
 
 == Plugin Approach
 Using a configuration extension, tasks can be identified for which checksums should be calculated.  Checksums can be
