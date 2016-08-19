@@ -33,10 +33,13 @@ class ChecksumExtension {
 
     private final TemplateEngine engine = new SimpleTemplateEngine()
 
+    private final Project project
+
     ChecksumExtension() { }
 
     ChecksumExtension(Project project) {
-        tasks = project.container(ChecksumItem)
+        this.project = project
+        this.tasks = project.container(ChecksumItem)
     }
 
     String propertyFile = 'checksums.properties'
@@ -86,19 +89,25 @@ class ChecksumExtension {
     }
 
     protected String checksumTaskName(ChecksumItem item) {
-        if (item.taskName) {
-            item.taskName
-        } else {
-            engine.createTemplate(taskNameTemplate).make(['task': item.name]).toString()
-        }
+        item.taskName ?: engine.createTemplate(taskNameTemplate).make(['task': item.name]).toString()
     }
 
     protected String checksumPropertyName(ChecksumItem item) {
-        if (item.propertyName) {
-            item.propertyName
-        } else {
-            engine.createTemplate(propertyNameTemplate).make(['task': item.name]).toString()
+        item.propertyName ?: engine.createTemplate(propertyNameTemplate).make(['task': item.name]).toString()
+    }
+
+    protected Properties getProperties() {
+        assert project, 'Project not set!'
+
+        File file = project.file(propertyFile)
+
+        Properties props = new Properties()
+
+        if ( file.exists() ) {
+            props.load(file.newReader())
         }
+
+        props
     }
 }
 
