@@ -17,7 +17,6 @@
 package com.scrain.gradle
 
 import org.gradle.api.DefaultTask
-import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.TaskAction
 
 /**
@@ -25,9 +24,6 @@ import org.gradle.api.tasks.TaskAction
  */
 class ComputeChecksumsTask extends DefaultTask {
     protected static final String NAME = 'computeChecksums'
-
-    @OutputDirectory
-    File checksumsDir = project.file "${project.buildDir}/checksums"
 
     ComputeChecksumsTask() {
         group = ChecksumPlugin.TASK_GROUP
@@ -38,5 +34,15 @@ class ComputeChecksumsTask extends DefaultTask {
     def computeChecksums() {
         // just a placeholder for now... maybe not worth keeping as a class long term
         logger.info ":${name} done"
+    }
+
+    /**
+     * Convenience method for checking if all CheckSumTasks latest values are the same
+     * as what is found in the checksum properties file.
+     *
+     * @return true if ALL checksum tasks value are the same in the properties file, otherwise false
+     */
+    boolean sameAsPropertyFile() {
+        ! project.tasks.withType(ChecksumTask).any{ ! it.sameAsPropertyFile() }
     }
 }

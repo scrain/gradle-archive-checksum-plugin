@@ -51,16 +51,23 @@ class ChecksumExtensionSpec extends Specification {
 
     @Unroll
     @SuppressWarnings('GStringExpressionWithinString')
-    def "Checksum property template can be overridden"(ChecksumExtension ext, ChecksumItem item, String expectedName) {
-        expect:
+    def "Checksum property template can be overridden"() {
+        when:
+            ChecksumExtension ext = new ChecksumExtension()
+            ext.propertyNameTemplate = propertyNameTemplate ?: ext.propertyNameTemplate
+
+            ChecksumItem item = new ChecksumItem('foo')
+            item.propertyName = itemPropertyName ?: item.propertyName
+
+        then:
             ext.checksumPropertyName(item) == expectedName
 
         where:
-            ext                                                     | item                                  | expectedName
-            new ChecksumExtension()                                 | new ChecksumItem('foo')               | 'checksum.foo'
-            new ChecksumExtension(propertyNameTemplate: 'x${task}') | new ChecksumItem('foo')               | 'xfoo'
-            new ChecksumExtension()                                 | new ChecksumItem(propertyName: 'bar') | 'bar'
-            new ChecksumExtension(propertyNameTemplate: 'x${task}') | new ChecksumItem(propertyName: 'bar') | 'bar'
+            propertyNameTemplate    | itemPropertyName   | expectedName
+            null                    | null               | 'checksum.foo'
+            'x${task}'              | null               | 'xfoo'
+            null                    | 'bar'              | 'bar'
+            'x${task}'              | 'bar'              | 'bar'
     }
 
     @Unroll

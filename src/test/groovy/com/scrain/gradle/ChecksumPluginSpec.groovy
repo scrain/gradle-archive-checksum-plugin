@@ -64,6 +64,5 @@ class ChecksumPluginSpec extends Specification {
 
         then:
             tasks.size() == 2
-
     }
 }

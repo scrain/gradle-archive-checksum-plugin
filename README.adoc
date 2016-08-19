@@ -14,6 +14,7 @@ published and if so, skip the publishing step.
 
 == Installation
 
+[source,groovy]
 .Gradle 2.0 and earlier
 ----
 buildscript {
@@ -30,6 +31,7 @@ buildscript {
 apply plugin: 'com.scrain.checksum-plugin'
 ----
 
+[source,groovy]
 .Gradle 2.1 and up
 ----
 plugins {
@@ -37,14 +39,46 @@ plugins {
 }
 ----
 
-== Approach
+
+
+== Quickstart
+
+Simple example configuration that creates a checksum for a JAR file created by the `java` plugin
+and then alters the `publish` task to only execute if the latest checksum is different than the
+previous.
+
+[source,groovy]
+----
+checksum {
+    tasks {
+        jar {}  // will create a checksum for the jar task
+    }
+}
+
+publish.dependsOn computeChecksums
+publish.onlyIf {
+    // compares the latest computed checksum to those saved in `checksum.propertyFile`
+    ! computeChecksums.sameAsPropertyFile()
+}
+publish.finalizedBy saveChecksums
+----
+
+With the above build configuration, executing the `publish` task will automatically execute `computeChecksums`
+and subsequently stop the `publish` task from executing if the checksum found within the checksums properties
+file match the computed value.  If the value are not the same, then the `publish` task will execute and
+be followed by `saveChecksums` task call which will update the checksum in the file.  The checksums properties
+file should subsequently be committed to version control.
+
+== Plugin Approach
 Using a configuration extension, tasks can be identified for which checksums should be calculated.  Checksums can be
 computed from a task using files identified in its inputs, outputs or both.  For each task identified within the
 configuration, a corresponding task of type `com.scrain.gradle.ChecksumTask` is created that performs
 the checksum calculation.
 
-
 == Configuration
+
+An overall plugin configuration can be set that changes the behaviour of all checksum tasks
+that might be executed, but this can be further tweaked for each individual task as well.
 
 === Overall Checksum Configuration
 [source,groovy]

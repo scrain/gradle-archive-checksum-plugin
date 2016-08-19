@@ -107,6 +107,8 @@ class ChecksumTask extends SourceTask {
      * @return File instance of the newly created source file listing
      */
     protected File createSourceFileListing() {
+        assert ! sourceListFile.exists() || sourceListFile.delete(), "Unable to remove source listing ${sourceListFile}"
+
         assert sourceListFile.parentFile.exists() ?: sourceListFile.parentFile.mkdirs(),
             "Unable to create source listing dir ${sourceListFile.parentFile}"
 
@@ -147,5 +149,23 @@ class ChecksumTask extends SourceTask {
         } else {
             source task.outputs.files
         }
+    }
+
+    /**
+     * Convenience method for checking if task's latest computed checksum value is equal to the
+     * value stored in the property file.  Requires the latest computed value is available and will
+     * throw assertion error if it is not.
+     *
+     * @return true if task's checksum value is the same as found in the properties file, otherwise false
+     */
+    boolean sameAsPropertyFile() {
+        assert checksumFile?.text, "Computed checksum for '${name}' task not found.  Has it been run?"
+
+        String propertyFileChecksum=checksumExt.properties[this.propertyName]
+
+        logger.info ":${name}.sameAsPropertyFile() - ${checksumFile.text} (latest computed value)"
+        logger.info ":${name}.sameAsPropertyFile() - ${propertyFileChecksum} (stored in file)"
+
+        checksumFile.text == propertyFileChecksum
     }
 }

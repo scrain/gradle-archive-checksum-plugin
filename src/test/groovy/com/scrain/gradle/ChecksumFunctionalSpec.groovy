@@ -16,7 +16,7 @@
 
 package com.scrain.gradle
 
-import static org.gradle.testkit.runner.TaskOutcome.SUCCESS
+import static org.gradle.testkit.runner.TaskOutcome.*
 import groovy.io.FileType
 import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.GradleRunner
@@ -193,6 +193,36 @@ class ChecksumFunctionalSpec extends Specification {
 
     }
 
+    def 'Redundant publishing can be avoided using checksum'() {
+
+        when: 'publish task is configured to only run if computed checksum is different than saved'
+            createBuildFile('checksum { tasks { jar { } } }',
+            '''
+                task publish()
+                publish.dependsOn computeChecksums
+                publish.onlyIf {
+                    ! jarChecksum.sameAsPropertyFile()
+                }
+                publish.finalizedBy saveChecksums
+            ''')
+
+        and: 'we run publish twice'
+            BuildResult result1 = build 'publish'
+            BuildResult result2 = build 'clean', 'publish'
+
+        then: 'First publish will succeed and checksum will be saved'
+            result1.task(':jarChecksum').outcome      == SUCCESS
+            result1.task(':computeChecksums').outcome == SUCCESS
+            result1.task(':publish').outcome          == SUCCESS
+            result1.task(':saveChecksums').outcome    == SUCCESS
+
+        and: 'Second publish will be skipped checksum file will be up to date'
+            result2.task(':jarChecksum').outcome      == SUCCESS
+            result2.task(':computeChecksums').outcome == SUCCESS
+            result2.task(':publish').outcome          == SKIPPED
+            result2.task(':saveChecksums').outcome    == UP_TO_DATE
+    }
+
     private GradleRunner createAndConfigureGradleRunner(String... arguments) {
         String[] args = arguments + '--stacktrace'
         GradleRunner.create().withProjectDir(projectDir).withArguments(args).withPluginClasspath()
@@ -202,7 +232,7 @@ class ChecksumFunctionalSpec extends Specification {
         createAndConfigureGradleRunner(arguments).build()
     }
 
-    private createBuildFile(String pluginExt) {
+    private createBuildFile(String pluginExt, String extraBuildContent = '') {
         buildFile = tempDir.newFile('build.gradle')
 
         buildFile << """
@@ -227,6 +257,8 @@ class ChecksumFunctionalSpec extends Specification {
             artifacts {
                 archives sourcesJar
             }
+
+            ${extraBuildContent}
         """
     }
 
@@ -254,6 +286,4 @@ class Foo{}
 '''
         groovyFile
     }
-
-
 }

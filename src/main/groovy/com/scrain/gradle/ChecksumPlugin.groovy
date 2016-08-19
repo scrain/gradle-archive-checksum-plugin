@@ -26,7 +26,7 @@ import org.gradle.api.logging.Logger
  *  Main plugin implementation for the gradle checksum-plugin
  */
 class ChecksumPlugin implements Plugin<Project> {
-    protected final static String TASK_GROUP = 'Checksum Tasks'
+    protected final static String TASK_GROUP = 'Checksum'
 
     private ChecksumExtension checksumExt
 
@@ -37,7 +37,7 @@ class ChecksumPlugin implements Plugin<Project> {
 
         checksumExt = project.extensions.create(ChecksumExtension.NAME, ChecksumExtension, project)
 
-        Task computeChecksums = project.tasks.create(ComputeChecksumsTask.NAME, ComputeChecksumsTask)
+        ComputeChecksumsTask computeChecksums = project.tasks.create(ComputeChecksumsTask.NAME, ComputeChecksumsTask)
 
         project.tasks.withType(ChecksumTask).whenTaskAdded { checksumTask ->
             computeChecksums.dependsOn checksumTask
@@ -58,7 +58,8 @@ class ChecksumPlugin implements Plugin<Project> {
         project.tasks.all { task ->
             ChecksumItem item = checksumExt.tasks.findByName(task.name)
             if (item) {
-                logger.lifecycle ":checksum-plugin item - ${item}"
+                logger.info ":checksum-plugin ${item}"
+
                 ChecksumTask checksumTask = createChecksumTask(project, item, task)
                 tasks << checksumTask
 
@@ -73,7 +74,7 @@ class ChecksumPlugin implements Plugin<Project> {
 
         String checksumTaskName = checksumExt.checksumTaskName(item)
 
-        logger.lifecycle ":checksum-plugin configuring checksum task '${checksumTaskName}'"
+        logger.info ":checksum-plugin configuring checksum task '${checksumTaskName}'"
 
         ChecksumTask checksumTask = project.tasks.create(checksumTaskName, ChecksumTask)
 

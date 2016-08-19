@@ -26,7 +26,7 @@ import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Unroll
 
-class SourceChecksumTaskSpec extends Specification {
+class ChecksumTaskSpec extends Specification {
     @Rule
     TemporaryFolder tempDir = new TemporaryFolder()
 
