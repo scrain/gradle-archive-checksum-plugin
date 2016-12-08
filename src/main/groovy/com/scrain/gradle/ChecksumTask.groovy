@@ -83,7 +83,7 @@ class ChecksumTask extends SourceTask {
         }
         String checksum = ant.properties[totalProp]
 
-        checksumFile << checksum
+        checksumFile.text = checksum
 
         logger.lifecycle ":${name} result: ${checksum}"
     }
