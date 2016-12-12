@@ -39,13 +39,9 @@ plugins {
 }
 ----
 
-
-
 == Quickstart
 
-Simple example configuration that creates a checksum for a JAR file created by the `java` plugin
-and then alters the `publish` task to only execute if the latest checksum is different than the
-previous.
+Simple example configuration that creates a checksum for a JAR file created by the `java` plugin.
 
 [source,groovy]
 ----
@@ -54,7 +50,22 @@ checksum {
         jar {}  // will create a checksum for the jar task
     }
 }
+----
 
+Now if you execute the `saveChecksums` tasks this will compute and save a checksum for the `jar` tasks in the
+file called (by default) `checksums.properties`.
+
+.checksums.properties
+----
+checksum.jar=39b2b893265b6641971057d6d41f1befc838cc6d
+----
+
+Maintaining this file to source control now allows you to use the previously computed checksums to conditionally
+disable other tasks.  For example, if you would like to prevent the `publish` tasks from executing if the `jar`
+task's checksum is the same you would add the following to your gradle build.
+
+[source,groovy]
+----
 publish.dependsOn computeChecksums
 publish.onlyIf {
     // compares the latest computed checksum to those saved in the checksums property file.
@@ -66,8 +77,8 @@ publish.finalizedBy saveChecksums
 With the above build configuration, executing the `publish` task will automatically execute `computeChecksums`
 and subsequently stop the `publish` task from executing if the checksum found within the checksums properties
 file matches the computed value.  If the value is not the same, then the `publish` task will execute and
-be followed by the `saveChecksums` task which will update the checksum in the file.  The checksums properties
-file should be maintained in version control for the project.
+be followed by the `saveChecksums` task which will update the checksum in the file.  The updated checksums
+properties file should then be committed back to source control.
 
 == Plugin Approach
 Using a configuration extension, tasks can be identified for which checksums should be calculated.  Checksums can be
@@ -76,7 +87,6 @@ configuration, a corresponding task of type `com.scrain.gradle.ChecksumTask` is 
 the checksum calculation.
 
 == Configuration
-
 An overall plugin configuration can be set that changes the behaviour of all checksum tasks
 that might be executed, but this can be further tweaked for each individual task as well.
 
