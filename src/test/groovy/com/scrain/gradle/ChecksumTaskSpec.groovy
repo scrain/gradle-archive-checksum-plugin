@@ -100,19 +100,19 @@ class ChecksumTaskSpec extends Specification {
 
     def "Calculation of the checksum twice should yield the same result"() {
         when: 'A checksum is produced'
-        File sourceFile = createFile("${project.projectDir}/foo.txt")
-        checksumTask.source = project.file(sourceFile)
-        checksumTask.compute()
-        String firstChecksum = checksumTask.checksumFile.text
+            File sourceFile = createFile("${project.projectDir}/foo.txt")
+            checksumTask.source = project.file(sourceFile)
+            checksumTask.compute()
+            String firstChecksum = checksumTask.checksumFile.text
 
         and: 'Source file is renamed and the checksum recomputed'
-        sourceFile = createFile("${project.projectDir}/foo.txt")
-        checksumTask.source = project.file(sourceFile)
-        checksumTask.compute()
-        String secondChecksum = checksumTask.checksumFile.text
+            sourceFile = createFile("${project.projectDir}/foo.txt")
+            checksumTask.source = project.file(sourceFile)
+            checksumTask.compute()
+            String secondChecksum = checksumTask.checksumFile.text
 
-        then: 'The checksums should be different'
-        firstChecksum == secondChecksum
+        then: 'The checksums should be the same'
+            firstChecksum == secondChecksum
     }
 
     @Unroll
